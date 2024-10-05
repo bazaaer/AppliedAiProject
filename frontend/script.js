@@ -1,7 +1,7 @@
 document.getElementById('submitButton').addEventListener('click', function() {
     const inputText = document.getElementById('inputText').value;
 
-    fetch('http://klopta.vinnievirtuoso.online/api/rewrite', {
+    fetch('https://klopta.vinnievirtuoso.online/api/rewrite', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
