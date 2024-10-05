@@ -9,6 +9,9 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read          # Allows reading repository contents
+      packages: write         # Grants permission to write to GHCR
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
