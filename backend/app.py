@@ -26,7 +26,7 @@ def rewrite_text():
             model="gpt-4o",
             messages=[
                 {"role": "system", 
-                 "content": "You are a journalist tasked with rewriting the following text in the corporate identity of www.antwerpen.be in DUTCH: "
+                 "content": "You are a journalist tasked with rewriting text in the corporate identity of www.antwerpen.be in DUTCH. Dont add or remove any information!!! Here is the original text: "
                 },
                 {"role": "user", 
                  "content": user_text
