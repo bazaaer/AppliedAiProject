@@ -3,3 +3,7 @@ openai
 flask-cors
 gunicorn
 gevent
+pymongo
+python-dotenv
+bcrypt
+jwt
