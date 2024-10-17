@@ -6,4 +6,4 @@ gevent
 pymongo
 python-dotenv
 bcrypt
-jwt
+Flask-JWT-Extended
