@@ -1,0 +1,328 @@
+openapi: 3.0.0
+info:
+  title: Klopta API
+  version: '1.0'
+  description: API-documentatie voor de Klopta-applicatie.
+servers:
+  - url: https://klopta.vinnievirtuoso.online/
+paths:
+  /api/login:
+    post:
+      summary: Inloggen
+      description: Authenticeert een gebruiker en retourneert toegang- en vernieuwtokens.
+      tags:
+        - Authenticatie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Succesvol ingelogd
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Ongeldig verzoek
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Ongeautoriseerd
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/refresh:
+    post:
+      summary: Vernieuw Toegangstoken
+      description: Vernieuwt het toegangstoken met behulp van een geldig vernieuwtoken.
+      tags:
+        - Authenticatie
+      security:
+        - BearerAuthRefresh: []
+      responses:
+        '200':
+          description: Token succesvol vernieuwd
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '401':
+          description: Ongeautoriseerd (Ongeldig of verlopen vernieuwtoken)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/logout:
+    delete:
+      summary: Uitloggen
+      description: Logt de gebruiker uit door het toegangstoken in te trekken.
+      tags:
+        - Authenticatie
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Succesvol uitgelogd
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/logout_refresh:
+    delete:
+      summary: Vernieuwtoken Intrekken
+      description: Trekt het vernieuwtoken in.
+      tags:
+        - Authenticatie
+      security:
+        - BearerAuthRefresh: []
+      responses:
+        '200':
+          description: Vernieuwtoken succesvol ingetrokken
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/create_user:
+    post:
+      summary: Nieuwe Gebruiker Aanmaken
+      description: Maakt een nieuw gebruikersaccount aan (alleen voor beheerders).
+      tags:
+        - Gebruikers
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Gebruiker succesvol aangemaakt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Ongeldig verzoek
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Verboden (Niet geautoriseerd)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/protected:
+    get:
+      summary: Beveiligde Route (JWT-test)
+      description: Een beveiligde route om te testen of je JWT-token correct werkt.
+      tags:
+        - Beveiligd
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Toegang verleend tot beveiligde route
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/admin:
+    get:
+      summary: Beheerder Route
+      description: Een beveiligde route die alleen toegankelijk is voor beheerders.
+      tags:
+        - Beveiligd
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Toegang verleend tot beheerder route
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Verboden (Niet geautoriseerd)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api:
+    get:
+      summary: API-status
+      description: Controleert of de API actief is.
+      tags:
+        - Algemeen
+      responses:
+        '200':
+          description: API is actief
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/rewrite:
+    post:
+      summary: Tekst Herschrijven
+      description: Herschrijft de opgegeven tekst (beveiligde route).
+      tags:
+        - Tekstverwerking
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RewriteRequest'
+      responses:
+        '200':
+          description: Tekst succesvol herschreven
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RewriteResponse'
+        '400':
+          description: Ongeldig verzoek (Geen tekst opgegeven)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Interne Serverfout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    BearerAuthRefresh:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Gebruik hier het vernieuwtoken
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: gebruikersnaam
+        password:
+          type: string
+          format: password
+          example: jouwwachtwoord
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT-toegangstoken
+        refresh_token:
+          type: string
+          description: JWT-vernieuwtoken
+    RefreshResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: Nieuw JWT-toegangstoken
+    CreateUserRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: nieuwegebruiker
+        password:
+          type: string
+          format: password
+          example: nieuwwachtwoord
+        role:
+          type: string
+          default: user
+          enum:
+            - user
+            - admin
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Operatie succesvol
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Foutmelding
+    RewriteRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: De tekst die herschreven moet worden
+          example: "Dit is de originele tekst."
+    RewriteResponse:
+      type: object
+      properties:
+        rewritten_text:
+          type: string
+          description: De herschreven tekst
+          example: "Dit is de herschreven tekst."
