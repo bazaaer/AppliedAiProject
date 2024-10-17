@@ -2,14 +2,18 @@
 from gevent import monkey
 monkey.patch_all()
 
+from flask_jwt_extended import JWTManager
+
+# Initialize JWTManager without the app
+jwt = JWTManager()
+
 from flask import Flask, jsonify
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 import datetime
 
-# Import jwt and blacklist from extensions.py
-from extensions import jwt, blacklist
+from db import token_blacklist_collection
 
 load_dotenv()
 
@@ -31,13 +35,13 @@ CORS(app)
 # Initialize JWTManager with the app
 jwt.init_app(app)
 
-# Register JWT callbacks after initializing jwt with the app
+# Register JWT callbacks to handle revoked tokens
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):
     jti = jwt_payload['jti']
-    return jti in blacklist
+    token_in_blacklist = token_blacklist_collection.find_one({'jti': jti}) is not None
+    return token_in_blacklist
 
-# Optional: Customize error messages
 @jwt.revoked_token_loader
 def revoked_token_callback(jwt_header, jwt_payload):
     return jsonify({'message': 'Token has been revoked'}), 401

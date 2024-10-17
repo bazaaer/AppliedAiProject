@@ -11,16 +11,13 @@ import bcrypt
 import os
 from dotenv import load_dotenv
 
-from db import db
-from extensions import blacklist  # Import blacklist from extensions.py
+import datetime
+from db import users_collection, token_blacklist_collection
 
 # Load environment variables
 load_dotenv()
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "adminpassword")
-
-# Access the users collection
-users_collection = db['users']
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "pwd")
 
 # Insert admin user if not exists
 if not users_collection.find_one({"username": ADMIN_USERNAME}):
@@ -69,14 +66,18 @@ def refresh():
 @jwt_required()
 def logout():
     jti = get_jwt()['jti']
-    blacklist.add(jti)
+    exp = get_jwt()['exp']
+    exp_datetime = datetime.datetime.utcfromtimestamp(exp)
+    token_blacklist_collection.insert_one({'jti': jti, 'exp': exp_datetime})
     return jsonify({'message': 'Successfully logged out'}), 200
 
 @auth_blueprint.route('/api/logout_refresh', methods=['DELETE'])
 @jwt_required(refresh=True)
 def logout_refresh():
     jti = get_jwt()['jti']
-    blacklist.add(jti)
+    exp = get_jwt()['exp']
+    exp_datetime = datetime.datetime.utcfromtimestamp(exp)
+    token_blacklist_collection.insert_one({'jti': jti, 'exp': exp_datetime})
     return jsonify({'message': 'Refresh token has been revoked'}), 200
 
 @auth_blueprint.route('/api/create_user', methods=['POST'])
