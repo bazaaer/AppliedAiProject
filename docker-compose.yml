@@ -1,5 +1,5 @@
 services:
-  backend:
+  KL-backend:
     image: ghcr.io/bazaaer/klopta-backend:latest
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
@@ -8,12 +8,16 @@ services:
       # Backend
       - "traefik.http.routers.KL-backend.rule=Host(`${HOSTNAME}`) && PathPrefix(`/api`)"
       - "traefik.http.routers.KL-backend.entrypoints=websecure"
+      - "traefik.http.services.KL-backend.loadbalancer.server.port=5000"
       - "traefik.http.routers.KL-backend.tls=true"
       - "traefik.http.routers.KL-backend.tls.certresolver=letsencrypt"
+    deploy:
+      replicas: 2  # Duplicates the service to run 2 instances
     restart: unless-stopped
     networks:
       - traefik
-  frontend:
+
+  KL-frontend:
     image: ghcr.io/bazaaer/klopta-frontend:latest
     labels:
       - "traefik.enable=true"
