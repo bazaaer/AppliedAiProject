@@ -25,8 +25,8 @@ app.config['JWT_SECRET_KEY'] = app.config['SECRET_KEY']
 
 # JWT configuration
 app.config['JWT_TOKEN_LOCATION'] = ['headers']
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=15)  # Access token validity
-app.config['JWT_REFRESH_TOKEN_EXPIRES'] = datetime.timedelta(days=7)     # Refresh token validity
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = datetime.timedelta(days=7)
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 
