@@ -279,6 +279,8 @@ components:
         access_token:
           type: string
           description: Nieuw JWT-toegangstoken
+        refresh_token:
+          type: string
     CreateUserRequest:
       type: object
       required:
