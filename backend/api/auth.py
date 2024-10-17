@@ -59,8 +59,15 @@ def login():
 def refresh():
     current_user = get_jwt_identity()
     claims = get_jwt()
+    
+    # Create new access and refresh tokens
     new_access_token = create_access_token(identity=current_user, additional_claims={"role": claims.get("role", "user")})
-    return jsonify({'access_token': new_access_token}), 200
+    new_refresh_token = create_refresh_token(identity=current_user)
+    
+    return jsonify({
+        'access_token': new_access_token,
+        'refresh_token': new_refresh_token
+    }), 200
 
 @auth_blueprint.route('/api/logout', methods=['DELETE'])
 @jwt_required()
