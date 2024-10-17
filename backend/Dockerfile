@@ -1,14 +1,19 @@
-# Use an official Python runtime as a base image
-FROM python:3.11.5
+# Use a slimmed-down Python runtime as a base image
+FROM python:3.11-slim
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /backend
 
 # Copy the requirements file
 COPY requirements.txt ./
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install build dependencies for any Python packages that may need compilation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libssl-dev \
+    && pip install --no-cache-dir -r requirements.txt \
+    && apt-get purge -y --auto-remove build-essential libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy the rest of the application code
 COPY . .
@@ -16,5 +21,5 @@ COPY . .
 # Expose port 5000
 EXPOSE 5000
 
-# Run the application with Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+# Run the application with Gunicorn, using Gevent workers
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "12", "--worker-class", "gevent", "app:app"]
