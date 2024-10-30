@@ -1,33 +1,34 @@
 services:
-  python:
-    image: mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
+  dev-container:
+    image: gcr.io/kaggle-gpu-images/python:latest
+    volumes:
+      - workspace_data:/workspace:cached
     environment:
-      - MONGO_USER=root
-      - MONGO_PASSWORD=examplepassword
-      - MONGO_HOST=mongodb
-      - MONGO_PORT=27017
+      MONGO_USER: root
+      MONGO_PASSWORD: examplepassword
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
     depends_on:
       - mongodb
     networks:
       - internal_network
-    volumes:
-      - workspace_data:/workspace  # Use a named volume for the workspace
-    command: tail -f /dev/null  # Keeps the container running indefinitely
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    command: sleep infinity  # Keeps the container running
 
   mongodb:
     image: mongo:6
-    restart: unless-stopped
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=examplepassword
-    volumes:
-      - mongodb_data:/data/db
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: examplepassword
     networks:
       - internal_network
 
 volumes:
-  mongodb_data:
-  workspace_data:  # Named volume for storing the cloned repository
+  workspace_data:
 
 networks:
   internal_network:
