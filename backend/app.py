@@ -19,16 +19,11 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Securely load your secret key
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'my_precious')
 app.config['JWT_SECRET_KEY'] = app.config['SECRET_KEY']
-
-# JWT configuration
-app.config['JWT_TOKEN_LOCATION'] = ['headers']
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
-app.config['JWT_REFRESH_TOKEN_EXPIRES'] = datetime.timedelta(days=7)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=365)
 app.config['JWT_BLACKLIST_ENABLED'] = True
-app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']
 
 CORS(app)
 
@@ -39,8 +34,8 @@ jwt.init_app(app)
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):
     jti = jwt_payload['jti']
-    token_in_blacklist = token_blacklist_collection.find_one({'jti': jti}) is not None
-    return token_in_blacklist
+    token_in_blacklist = token_blacklist_collection.find_one({'jti': jti})
+    return token_in_blacklist is not None
 
 @jwt.revoked_token_loader
 def revoked_token_callback(jwt_header, jwt_payload):

@@ -3,7 +3,6 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import (
     jwt_required,
     create_access_token,
-    create_refresh_token,
     get_jwt_identity,
     get_jwt
 )
@@ -40,52 +39,26 @@ def login():
     if not username or not password:
         return jsonify({'message': 'Username and password are required'}), 400
 
+    # Retrieve user and validate password
     user = users_collection.find_one({"username": username})
     if not user or not bcrypt.checkpw(password.encode('utf-8'), user['password']):
         return jsonify({'message': 'Invalid username or password'}), 401
 
-    # Create access and refresh tokens
-    additional_claims = {"role": user.get("role", "user")}
-    access_token = create_access_token(identity=username, additional_claims=additional_claims)
-    refresh_token = create_refresh_token(identity=username)
+    # Generate a long-lived access token (acting as an API key)
+    api_token = create_access_token(identity=username, expires_delta=datetime.timedelta(days=365))
 
-    return jsonify({
-        'access_token': access_token,
-        'refresh_token': refresh_token
-    }), 200
+    return jsonify({'api_key': api_token}), 200
 
-@auth_blueprint.route('/api/refresh', methods=['POST'])
-@jwt_required(refresh=True)
-def refresh():
-    current_user = get_jwt_identity()
-    claims = get_jwt()
-    
-    # Create new access and refresh tokens
-    new_access_token = create_access_token(identity=current_user, additional_claims={"role": claims.get("role", "user")})
-    new_refresh_token = create_refresh_token(identity=current_user)
-    
-    return jsonify({
-        'access_token': new_access_token,
-        'refresh_token': new_refresh_token
-    }), 200
-
-@auth_blueprint.route('/api/logout', methods=['DELETE'])
-@jwt_required()
-def logout():
-    jti = get_jwt()['jti']
-    exp = get_jwt()['exp']
+@auth_blueprint.route('/api/revoke_api_key', methods=['DELETE'])
+@jwt_required()  # Ensure only authenticated users can revoke their API key
+def revoke_api_key():
+    jti = get_jwt()['jti']  # Get the unique identifier of the token
+    exp = get_jwt()['exp']  # Get the expiration time of the token
     exp_datetime = datetime.datetime.utcfromtimestamp(exp)
+    
+    # Add the token to the blacklist with expiration timestamp
     token_blacklist_collection.insert_one({'jti': jti, 'exp': exp_datetime})
-    return jsonify({'message': 'Successfully logged out'}), 200
-
-@auth_blueprint.route('/api/logout_refresh', methods=['DELETE'])
-@jwt_required(refresh=True)
-def logout_refresh():
-    jti = get_jwt()['jti']
-    exp = get_jwt()['exp']
-    exp_datetime = datetime.datetime.utcfromtimestamp(exp)
-    token_blacklist_collection.insert_one({'jti': jti, 'exp': exp_datetime})
-    return jsonify({'message': 'Refresh token has been revoked'}), 200
+    return jsonify({'message': 'API key revoked successfully'}), 200
 
 @auth_blueprint.route('/api/create_user', methods=['POST'])
 @jwt_required()
