@@ -1,330 +1,114 @@
-openapi: 3.0.0
+openapi: "3.0.0"
 info:
-  title: Klopta API
-  version: '1.0'
-  description: API-documentatie voor de Klopta-applicatie.
-servers:
-  - url: https://klopta.vinnievirtuoso.online/
+  title: "Backend API"
+  description: "API-documentatie voor authenticatie en gebruikersbeheer van de backend"
+  version: "1.0.0"
 paths:
   /api/login:
     post:
-      summary: Inloggen
-      description: Authenticeert een gebruiker en retourneert toegang- en vernieuwtokens.
-      tags:
-        - Authenticatie
+      summary: "Gebruiker login"
+      description: "Authenticeert de gebruiker en retourneert een JWT-toegangstoken."
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: "De gebruikersnaam van de gebruiker"
+                  example: "admin"
+                password:
+                  type: string
+                  description: "Het wachtwoord van de gebruiker"
+                  example: "pwd"
       responses:
-        '200':
-          description: Succesvol ingelogd
+        "200":
+          description: "Succesvolle login"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
-        '400':
-          description: Ongeldig verzoek
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Ongeautoriseerd
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/refresh:
-    post:
-      summary: Vernieuw Toegangstoken
-      description: Vernieuwt het toegangstoken met behulp van een geldig vernieuwtoken.
-      tags:
-        - Authenticatie
-      security:
-        - BearerAuthRefresh: []
-      responses:
-        '200':
-          description: Token succesvol vernieuwd
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RefreshResponse'
-        '401':
-          description: Ongeautoriseerd (Ongeldig of verlopen vernieuwtoken)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/logout:
+                type: object
+                properties:
+                  api_key:
+                    type: string
+                    description: "JWT-toegangstoken voor geauthenticeerde aanvragen"
+        "401":
+          description: "Ongeldige inloggegevens"
+
+  /api/revoke_api_key:
     delete:
-      summary: Uitloggen
-      description: Logt de gebruiker uit door het toegangstoken in te trekken.
-      tags:
-        - Authenticatie
+      summary: "API-sleutel intrekken"
+      description: "Trek de API-sleutel van de huidige gebruiker in."
       security:
-        - BearerAuth: []
+        - bearerAuth: []
       responses:
-        '200':
-          description: Succesvol uitgelogd
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-        '401':
-          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/logout_refresh:
-    delete:
-      summary: Vernieuwtoken Intrekken
-      description: Trekt het vernieuwtoken in.
-      tags:
-        - Authenticatie
-      security:
-        - BearerAuthRefresh: []
-      responses:
-        '200':
-          description: Vernieuwtoken succesvol ingetrokken
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-        '401':
-          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "API-sleutel succesvol ingetrokken"
+        "401":
+          description: "Niet geautoriseerd"
+
   /api/create_user:
     post:
-      summary: Nieuwe Gebruiker Aanmaken
-      description: Maakt een nieuw gebruikersaccount aan (alleen voor beheerders).
-      tags:
-        - Gebruikers
+      summary: "Gebruiker aanmaken"
+      description: "Maakt een nieuwe gebruiker aan. Alleen toegankelijk voor admin-gebruikers."
       security:
-        - BearerAuth: []
+        - bearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateUserRequest'
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: "De gebruikersnaam voor de nieuwe gebruiker"
+                  example: "nieuwegebruiker"
+                password:
+                  type: string
+                  description: "Het wachtwoord voor de nieuwe gebruiker"
+                  example: "nieuwwachtwoord"
+                role:
+                  type: string
+                  description: "Rol van de nieuwe gebruiker (standaard is 'user')"
+                  example: "user"
       responses:
-        '201':
-          description: Gebruiker succesvol aangemaakt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-        '400':
-          description: Ongeldig verzoek
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Verboden (Niet geautoriseerd)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+        "201":
+          description: "Gebruiker succesvol aangemaakt"
+        "400":
+          description: "Gebruiker aanmaken mislukt"
+        "403":
+          description: "Verboden"
+
   /api/protected:
     get:
-      summary: Beveiligde Route (JWT-test)
-      description: Een beveiligde route om te testen of je JWT-token correct werkt.
-      tags:
-        - Beveiligd
+      summary: "Beveiligde route"
+      description: "Een beveiligde route die authenticatie vereist."
       security:
-        - BearerAuth: []
+        - bearerAuth: []
       responses:
-        '200':
-          description: Toegang verleend tot beveiligde route
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-        '401':
-          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "Toegang verleend"
+        "401":
+          description: "Ongeautoriseerde toegang"
+
   /api/admin:
     get:
-      summary: Beheerder Route
-      description: Een beveiligde route die alleen toegankelijk is voor beheerders.
-      tags:
-        - Beveiligd
+      summary: "Admin Route"
+      description: "Alleen toegankelijk voor admin-gebruikers."
       security:
-        - BearerAuth: []
+        - bearerAuth: []
       responses:
-        '200':
-          description: Toegang verleend tot beheerder route
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-        '401':
-          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Verboden (Niet geautoriseerd)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api:
-    get:
-      summary: API-status
-      description: Controleert of de API actief is.
-      tags:
-        - Algemeen
-      responses:
-        '200':
-          description: API is actief
-          content:
-            text/plain:
-              schema:
-                type: string
-  /api/rewrite:
-    post:
-      summary: Tekst Herschrijven
-      description: Herschrijft de opgegeven tekst (beveiligde route).
-      tags:
-        - Tekstverwerking
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RewriteRequest'
-      responses:
-        '200':
-          description: Tekst succesvol herschreven
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RewriteResponse'
-        '400':
-          description: Ongeldig verzoek (Geen tekst opgegeven)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Interne Serverfout
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "Admin-toegang verleend"
+        "403":
+          description: "Alleen voor admins"
+
 components:
   securitySchemes:
-    BearerAuth:
+    bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-    BearerAuthRefresh:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: Gebruik hier het vernieuwtoken
-  schemas:
-    LoginRequest:
-      type: object
-      required:
-        - username
-        - password
-      properties:
-        username:
-          type: string
-          example: gebruikersnaam
-        password:
-          type: string
-          format: password
-          example: jouwwachtwoord
-    LoginResponse:
-      type: object
-      properties:
-        access_token:
-          type: string
-          description: JWT-toegangstoken
-        refresh_token:
-          type: string
-          description: JWT-vernieuwtoken
-    RefreshResponse:
-      type: object
-      properties:
-        access_token:
-          type: string
-          description: Nieuw JWT-toegangstoken
-        refresh_token:
-          type: string
-    CreateUserRequest:
-      type: object
-      required:
-        - username
-        - password
-      properties:
-        username:
-          type: string
-          example: nieuwegebruiker
-        password:
-          type: string
-          format: password
-          example: nieuwwachtwoord
-        role:
-          type: string
-          default: user
-          enum:
-            - user
-            - admin
-    MessageResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Operatie succesvol
-    ErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Foutmelding
-    RewriteRequest:
-      type: object
-      required:
-        - text
-      properties:
-        text:
-          type: string
-          description: De tekst die herschreven moet worden
-          example: "Dit is de originele tekst."
-    RewriteResponse:
-      type: object
-      properties:
-        rewritten_text:
-          type: string
-          description: De herschreven tekst
-          example: "Dit is de herschreven tekst."
