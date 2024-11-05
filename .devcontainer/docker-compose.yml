@@ -2,7 +2,7 @@ services:
   dev-container:
     image: gcr.io/kaggle-gpu-images/python:latest
     volumes:
-      - workspace_data:/workspace:cached
+      - ..:/workspaces/AppliedAiProject:cached
     environment:
       MONGO_USER: root
       MONGO_PASSWORD: examplepassword
@@ -12,12 +12,8 @@ services:
       - mongodb
     networks:
       - internal_network
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
-    command: sleep infinity  # Keeps the container running
+    runtime: nvidia
+    command: sleep infinity
 
   mongodb:
     image: mongo:6
@@ -26,9 +22,6 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: examplepassword
     networks:
       - internal_network
-
-volumes:
-  workspace_data:
 
 networks:
   internal_network:
