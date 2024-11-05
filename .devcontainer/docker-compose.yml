@@ -1,6 +1,6 @@
 services:
   dev-container:
-    image: gcr.io/kaggle-gpu-images/python:latest
+    image: nvidia/cuda:12.6.2-cudnn-devel-ubuntu22.04
     volumes:
       - ..:/workspaces/AppliedAiProject:cached
     environment:

@@ -6,7 +6,6 @@
     "runServices": ["mongodb"],
     "shutdownAction": "stopCompose",
 
-    // Features and other configurations remain the same
     "features": {
         "ghcr.io/devcontainers/features/common-utils:2": {
 			"installZsh": "true",
@@ -27,9 +26,6 @@
     },
     "customizations": {
         "vscode": {
-            "settings": {
-                "python.defaultInterpreterPath": "/opt/conda/bin/python"
-            },
             "extensions": [
                 "ms-python.python",
                 "ms-python.debugpy",
@@ -48,5 +44,5 @@
 
     "remoteUser": "vscode",
 
-    "postCreateCommand": "sudo /opt/conda/bin/python -m pip install -r backend/requirements.txt"
+    "postCreateCommand": "pip install -r backend/requirements.txt"
 }
