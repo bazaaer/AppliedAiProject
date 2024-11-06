@@ -22,7 +22,7 @@ app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access"]
 jwt = JWTManager(app)
 
 revoked_store = redis.StrictRedis(
-    host="redis", port=6379, db=0, decode_responses=True
+    host="KL-redis", port=6379, db=0, decode_responses=True
 )
 
 from api import auth_blueprint, api_blueprint
