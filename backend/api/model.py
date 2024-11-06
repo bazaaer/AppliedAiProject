@@ -1,31 +1,16 @@
-# backend/api/routes.py
+# api/model.py
+from quart import Blueprint, request, jsonify
 
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
-
-# Create a blueprint
 api_blueprint = Blueprint('api', __name__)
 
-
 @api_blueprint.route('/api', methods=['GET'])
-def index():
+async def index():
     return 'Klopta API is running!'
 
-
 @api_blueprint.route('/api/rewrite', methods=['POST'])
-@jwt_required()
-def rewrite_text():
-    data = request.get_json()
-    user_text = data.get('text', '')
-
-    rewritten_text = "this is a rewritten text"
-
-    if not user_text:
-        return jsonify({'error': 'No text provided'}), 400
-
-    try:
-
-        return jsonify({'rewritten_text': rewritten_text})
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+async def rewrite():
+    data = await request.get_json()
+    text = data.get('text')
+    if not text:
+        return jsonify({'message': 'Text is required'}), 400
+    return jsonify({'text': text[::-1]}), 200

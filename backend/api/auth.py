@@ -1,103 +1,107 @@
 # api/auth.py
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import (
+from app import ACCESS_EXPIRES
+from quart import Blueprint, request, jsonify
+from quart_jwt_extended import (
     jwt_required,
     create_access_token,
     get_jwt_identity,
-    get_jwt
+    get_jwt_claims,
+    get_raw_jwt
 )
 import bcrypt
 import os
 from dotenv import load_dotenv
 
-import datetime
-from db import users_collection, token_blacklist_collection
+from db import users_collection
 
-# Load environment variables
+import redis
+
+revoked_store = redis.StrictRedis(
+    host="redis", port=6379, db=0, decode_responses=True
+)
+
 load_dotenv()
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "pwd")
 
-# Insert admin user if not exists
-if not users_collection.find_one({"username": ADMIN_USERNAME}):
-    hashed_password = bcrypt.hashpw(ADMIN_PASSWORD.encode('utf-8'), bcrypt.gensalt())
-    users_collection.insert_one({
-        "username": ADMIN_USERNAME,
-        "password": hashed_password,
-        "role": "admin"
-    })
+# Define async function to insert admin user if not exists
+async def insert_admin_user():
+    existing_admin = await users_collection.find_one({"username": ADMIN_USERNAME})
+    if not existing_admin:
+        hashed_password = bcrypt.hashpw(ADMIN_PASSWORD.encode('utf-8'), bcrypt.gensalt())
+        await users_collection.insert_one({
+            "username": ADMIN_USERNAME,
+            "password": hashed_password,
+            "role": "admin"
+        })
 
-# Auth Blueprint
 auth_blueprint = Blueprint('auth', __name__)
 
-@auth_blueprint.route('/api/login', methods=['POST'])
-def login():
-    data = request.get_json()
+
+
+@auth_blueprint.route('/api/get_api_key', methods=['POST'])
+async def login():
+    data = await request.get_json()
     username = data.get('username')
     password = data.get('password')
 
     if not username or not password:
-        return jsonify({'message': 'Username and password are required'}), 400
+        return jsonify({'msg': 'Username and password are required'}), 400
 
     # Retrieve user and validate password
-    user = users_collection.find_one({"username": username})
+    user = await users_collection.find_one({"username": username})
     if not user or not bcrypt.checkpw(password.encode('utf-8'), user['password']):
-        return jsonify({'message': 'Invalid username or password'}), 401
+        return jsonify({'msg': 'Invalid username or password'}), 401
 
-    # Generate a long-lived access token (acting as an API key)
-    api_token = create_access_token(identity=username, expires_delta=datetime.timedelta(days=365))
+    user_claims = {
+        "role": user.get("role", "user"),
+    }
+    api_token = create_access_token(
+        identity=username,
+        user_claims=user_claims
+    )
 
     return jsonify({'api_key': api_token}), 200
 
-@auth_blueprint.route('/api/revoke_api_key', methods=['DELETE'])
-@jwt_required()  # Ensure only authenticated users can revoke their API key
-def revoke_api_key():
-    jti = get_jwt()['jti']  # Get the unique identifier of the token
-    exp = get_jwt()['exp']  # Get the expiration time of the token
-    exp_datetime = datetime.datetime.utcfromtimestamp(exp)
-    
-    # Add the token to the blacklist with expiration timestamp
-    token_blacklist_collection.insert_one({'jti': jti, 'exp': exp_datetime})
-    return jsonify({'message': 'API key revoked successfully'}), 200
+@auth_blueprint.route("/api/create_user", methods=["POST"])
+@jwt_required
+async def create_user():
+    claims = get_jwt_claims()
 
-@auth_blueprint.route('/api/create_user', methods=['POST'])
-@jwt_required()
-def create_user():
-    current_user = get_jwt_identity()
-    claims = get_jwt()
+    # Check if the current user has admin role
     if claims.get("role") != "admin":
-        return jsonify({'message': 'Unauthorized'}), 403
+        return jsonify({"msg": "Admins only!"}), 403
 
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    role = data.get('role', 'user')
+    # Get data from request
+    data = await request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+    role = data.get("role", "user")  # Default to 'user' role if not specified
 
     if not username or not password:
-        return jsonify({'message': 'Username and password are required'}), 400
+        return jsonify({"msg": "Username and password are required"}), 400
 
-    if users_collection.find_one({"username": username}):
-        return jsonify({'message': 'User already exists'}), 400
-
+    # Hash the password
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    users_collection.insert_one({
+
+    # Insert new user into the database
+    await users_collection.insert_one({
         "username": username,
         "password": hashed_password,
         "role": role
     })
 
-    return jsonify({'message': 'User created successfully'}), 201
+    return jsonify({"msg": f"User '{username}' with role '{role}' created successfully"}), 201
 
-@auth_blueprint.route('/api/protected', methods=['GET'])
-@jwt_required()
-def protected():
+@auth_blueprint.route("/api/protected", methods=["GET"])
+@jwt_required
+async def protected():
     current_user = get_jwt_identity()
-    return jsonify({'message': f'Welcome {current_user}, this is a protected route!'}), 200
+    return jsonify({'msg': f"welcome: {current_user}"}), 200
 
-@auth_blueprint.route('/api/admin', methods=['GET'])
-@jwt_required()
-def admin_route():
-    claims = get_jwt()
-    if claims.get('role') != 'admin':
-        return jsonify({'message': 'Admins only!'}), 403
-    return jsonify({'message': 'Welcome, admin!'}), 200
+@auth_blueprint.route("/api/revoke_api_key", methods=["DELETE"])
+@jwt_required
+async def logout():
+    jti = get_raw_jwt()["jti"]
+    revoked_store.set(jti, "true", ACCESS_EXPIRES * 1.2)
+    return jsonify({"msg": "API key successfully revoked"}), 200
