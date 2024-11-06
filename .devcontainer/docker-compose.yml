@@ -23,6 +23,13 @@ services:
     networks:
       - internal_network
 
+  redis:
+    image: "redis:latest"
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal_network
+      
   ollama:
     image: ollama/ollama:latest
     networks:
@@ -33,6 +40,7 @@ services:
 
 volumes:
   ollama_data:
+  redis_data:
 
 networks:
   internal_network:
