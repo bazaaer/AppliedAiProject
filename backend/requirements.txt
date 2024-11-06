@@ -1,9 +1,8 @@
-Flask
-openai
-flask-cors
-gunicorn
-gevent
-pymongo
-python-dotenv
+quart
+quart-cors
+quart-jwt-extended
+motor
 bcrypt
-Flask-JWT-Extended
+python-dotenv
+uvicorn
+redis

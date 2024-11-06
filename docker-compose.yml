@@ -1,35 +1,66 @@
 services:
   KL-backend:
     image: ghcr.io/bazaaer/klopta-backend:latest
-    environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      # Backend
+      # Backend routing
       - "traefik.http.routers.KL-backend.rule=Host(`${HOSTNAME}`) && PathPrefix(`/api`)"
       - "traefik.http.routers.KL-backend.entrypoints=websecure"
-      - "traefik.http.services.KL-backend.loadbalancer.server.port=5000"
       - "traefik.http.routers.KL-backend.tls=true"
       - "traefik.http.routers.KL-backend.tls.certresolver=letsencrypt"
-    deploy:
-      replicas: 2  # Duplicates the service to run 2 instances
-    restart: unless-stopped
+      - "traefik.http.services.KL-backend.loadbalancer.server.port=5000"
+    environment:
+      - MONGO_USER=root
+      - MONGO_PASSWORD=examplepassword
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
     networks:
+      - internal_network
       - traefik
+    depends_on:
+      - mongodb
+      - redis
+      - ollama
 
   KL-frontend:
     image: ghcr.io/bazaaer/klopta-frontend:latest
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      # Frontend
+      # Frontend routing
       - "traefik.http.routers.KL-frontend.rule=Host(`${HOSTNAME}`) && !PathPrefix(`/api`)"
       - "traefik.http.routers.KL-frontend.entrypoints=websecure"
       - "traefik.http.routers.KL-frontend.tls=true"
       - "traefik.http.routers.KL-frontend.tls.certresolver=letsencrypt"
-    restart: unless-stopped
     networks:
       - traefik
 
+  mongodb:
+    image: mongo:6
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=examplepassword
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - internal_network
+
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal_network
+
 networks:
+  internal_network:
+    driver: bridge
   traefik:
     external: true
+
+volumes:
+  mongo_data:
+  redis_data:
