@@ -17,7 +17,7 @@ from db import users_collection
 import redis
 
 revoked_store = redis.StrictRedis(
-    host="redis", port=6379, db=0, decode_responses=True
+    host="KL-redis", port=6379, db=0, decode_responses=True
 )
 
 load_dotenv()
