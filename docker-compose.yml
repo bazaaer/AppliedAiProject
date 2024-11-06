@@ -16,7 +16,7 @@ services:
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
     networks:
-      - internal_network
+      - KL-internal_network
       - traefik
     depends_on:
       - mongodb
@@ -36,7 +36,7 @@ services:
     networks:
       - traefik
 
-  mongodb:
+  KL-mongodb:
     image: mongo:6
     restart: unless-stopped
     environment:
@@ -45,22 +45,22 @@ services:
     volumes:
       - mongo_data:/data/db
     networks:
-      - internal_network
+      - KL-internal_network
 
-  redis:
+  KL-redis:
     image: redis:latest
     restart: unless-stopped
     volumes:
       - redis_data:/data
     networks:
-      - internal_network
+      - KL-internal_network
 
 networks:
-  internal_network:
+  KL-internal_network:
     driver: bridge
   traefik:
     external: true
 
 volumes:
-  mongo_data:
-  redis_data:
+  KL-mongo_data:
+  KL-redis_data:
