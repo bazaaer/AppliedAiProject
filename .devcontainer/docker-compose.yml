@@ -23,6 +23,17 @@ services:
     networks:
       - internal_network
 
+  ollama:
+    image: ollama/ollama:latest
+    networks:
+      - internal_network
+    volumes:
+      - ollama_data:/root/.ollama
+    runtime: nvidia
+
+volumes:
+  ollama_data:
+
 networks:
   internal_network:
     driver: bridge
