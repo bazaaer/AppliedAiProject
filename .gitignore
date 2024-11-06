@@ -2,4 +2,5 @@
 /.idea
 /backend/data gathering/data.csv
 /backend/data gathering/important_sentences.csv
+.ipynb*
 antwerpen.csv
