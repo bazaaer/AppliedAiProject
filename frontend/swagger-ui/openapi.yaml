@@ -6,7 +6,7 @@ info:
 servers:
   - url: https://klopta.vinnievirtuoso.online/
 paths:
-  /api/login:
+  /api/get_api_key:
     post:
       summary: Inloggen
       description: Authenticeert een gebruiker en retourneert toegang- en vernieuwtokens.
@@ -37,28 +37,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/refresh:
-    post:
-      summary: Vernieuw Toegangstoken
-      description: Vernieuwt het toegangstoken met behulp van een geldig vernieuwtoken.
-      tags:
-        - Authenticatie
-      security:
-        - BearerAuthRefresh: []
-      responses:
-        '200':
-          description: Token succesvol vernieuwd
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RefreshResponse'
-        '401':
-          description: Ongeautoriseerd (Ongeldig of verlopen vernieuwtoken)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/logout:
+  /api/revoke_api_key:
     delete:
       summary: Uitloggen
       description: Logt de gebruiker uit door het toegangstoken in te trekken.
@@ -69,27 +48,6 @@ paths:
       responses:
         '200':
           description: Succesvol uitgelogd
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-        '401':
-          description: Ongeautoriseerd (Ongeldig of ontbrekend token)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/logout_refresh:
-    delete:
-      summary: Vernieuwtoken Intrekken
-      description: Trekt het vernieuwtoken in.
-      tags:
-        - Authenticatie
-      security:
-        - BearerAuthRefresh: []
-      responses:
-        '200':
-          description: Vernieuwtoken succesvol ingetrokken
           content:
             application/json:
               schema:
