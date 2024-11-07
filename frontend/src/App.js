@@ -9,6 +9,7 @@ function App() {
     <div className="App">
         <h1>KLopta tests</h1>
         <h4>Pls work</h4>
+        <h3>test</h3>
         <CKEditorComponent />
         
     </div>
