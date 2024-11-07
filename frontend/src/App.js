@@ -7,7 +7,7 @@ import CKEditorComponent from "./components/CKEditorComponent.js"
 function App() {
   return (
     <div className="App">
-        <h1>CKEditor tests</h1>
+        <h1>KLopta tests</h1>
         <h4>Pls work</h4>
         <CKEditorComponent />
         
