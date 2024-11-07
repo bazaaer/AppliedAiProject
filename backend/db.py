@@ -15,3 +15,6 @@ db = client['klopta-db']
 # Define collections
 users_collection = db['users']
 api_keys_collection = db['api_keys']
+
+async def create_indexes():
+    await users_collection.create_index("username", unique=True)

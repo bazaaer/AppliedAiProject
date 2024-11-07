@@ -32,6 +32,8 @@ def check_if_token_is_revoked(decrypted_token):
 async def startup():
     from api.auth import insert_admin_user
     await insert_admin_user()
+    from db import create_indexes
+    await create_indexes()
 
 if __name__ == "__main__":
     import uvicorn
