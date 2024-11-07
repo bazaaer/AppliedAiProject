@@ -118,7 +118,7 @@ async def update_user():
     
     return jsonify({"msg": f"User '{username}' updated successfully {response}"}), 200
 
-@auth_blueprint.route("/api/generate_api_key", methods=["POST"])
+@auth_blueprint.route("/api/api_keys", methods=["POST"])
 @jwt_role_required(["admin", "user"])
 async def generate_api_key():
     username = get_jwt_identity()
@@ -151,7 +151,7 @@ async def generate_api_key():
 
     return jsonify({"api_key": new_api_key}), 200
 
-@auth_blueprint.route("/api/list_api_keys", methods=["GET"])
+@auth_blueprint.route("/api/api_keys", methods=["GET"])
 @jwt_role_required(["admin", "user"])
 async def list_api_keys():
     username = get_jwt_identity()
@@ -179,7 +179,7 @@ async def list_api_keys():
     return jsonify({"api_keys": api_key_list}), 200
 
 
-@auth_blueprint.route("/api/revoke_api_key", methods=["DELETE"])
+@auth_blueprint.route("/api/api_keys", methods=["DELETE"])
 @jwt_role_required(["admin", "user"])
 async def revoke_api_key():
     data = await request.get_json()
