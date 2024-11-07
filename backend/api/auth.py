@@ -199,6 +199,11 @@ async def revoke_api_key():
     if not api_key_record:
         return jsonify({"msg": "API key not found"}), 404
 
+    username = get_jwt_identity()
+
+    if api_key_record['username'] != username:
+        return jsonify({"msg": "You are not authorized to revoke this API key"}), 403
+
     # Update the status of the API key to "revoked"
     await api_keys_collection.update_one(
         {"_id": api_key_object_id},
