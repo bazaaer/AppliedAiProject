@@ -232,7 +232,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - BearerAuth: []
-  /api/generate_api_key:
+  /api/api_keys:
     post:
       summary: Generate a new API key
       description: Requires admin or user role.
@@ -268,7 +268,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - BearerAuth: []
-  /api/list_api_keys:
+  /api/api_keys:
     get:
       summary: List API keys
       description: Requires admin or user role.
@@ -294,7 +294,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - BearerAuth: []
-  /api/revoke_api_key:
+  /api/api_keys:
     delete:
       summary: Revoke an API key
       description: Requires admin or user role.
