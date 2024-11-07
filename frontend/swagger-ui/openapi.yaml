@@ -268,7 +268,6 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - BearerAuth: []
-  /api/api_keys:
     get:
       summary: List API keys
       description: Requires admin or user role.
@@ -294,7 +293,6 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - BearerAuth: []
-  /api/api_keys:
     delete:
       summary: Revoke an API key
       description: Requires admin or user role.
