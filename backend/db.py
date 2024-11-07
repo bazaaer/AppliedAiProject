@@ -12,5 +12,6 @@ MONGO_PORT = os.getenv("MONGO_PORT", "27017")
 client = AsyncIOMotorClient(f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/")
 db = client['klopta-db']
 
+# Define collections
 users_collection = db['users']
-revoked_tokens_collection = db['revoked_tokens']
+api_keys_collection = db['api_keys']
