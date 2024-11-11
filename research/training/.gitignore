@@ -1,0 +1,3 @@
+*.csv
+*.pkl
+../ai_model/output/
