@@ -4,7 +4,7 @@ import cupy as cp
 class SentenceGrouper:
     def __init__(self, model="nl_core_news_lg", similarity_threshold=0.75):
         self.nlp = spacy.load(model)
-        spacy.require_gpu()
+        spacy.prefer_gpu()
         self.similarity_threshold = similarity_threshold
 
     def _cosine_similarity(self, X, Y=None):
