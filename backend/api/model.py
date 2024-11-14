@@ -1,8 +1,10 @@
 # api/model.py
 from quart import Blueprint, request, jsonify
 from api.utils import jwt_or_api_key_required
-from markdown2 import markdown
-from html2text import html2text
+from checket.grouper import SentenceGrouper
+import re
+
+grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.75)
 
 model_blueprint = Blueprint('model', __name__)
 
@@ -22,22 +24,18 @@ async def index():
 async def score():
     request_data = await request.get_json()
 
-    # Set default for 'selection' if not provided
-    selection = request_data.get("selection", False)
-
-    # Convert 'text' from HTML to Markdown
+    # Extract 'text' and remove HTML tags
     html_text = request_data.get("text", "")
-    markdown_text = html2text(html_text) if html_text else ""
+    plain_text = re.sub(r'<[^>]*>', '', html_text) if html_text else ""
+    print(plain_text)
 
-    processed_html = markdown(markdown_text)
+    result = grouper.group_consecutive_similar_sentences(plain_text)
 
-    return jsonify({
-        "msg": "score successful",
-        "data": {
-            "text": processed_html,
-            "selection": selection
-        }
-    }), 200
+    response = []
+    for sentence, group_index in result:
+        response.append({"sentence": sentence, "group": group_index})
+
+    return jsonify(response), 200
 
 @model_blueprint.route("/api/rewrite", methods=["POST"])
 @jwt_or_api_key_required(["admin", "user"])
