@@ -92,7 +92,7 @@ class SentenceGrouper:
 
 
 if __name__ == "__main__":
-    test_text = """[youtube](https://www.youtube.com). jurreandenys@gmail.com. Ik ben cool. De appel is gay."""
+    test_text = """[youtube](https://www.youtube.com). Ik ben cool. De appel is gay."""
 
     grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.75)
 
