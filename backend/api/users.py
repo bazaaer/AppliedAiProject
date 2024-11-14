@@ -9,22 +9,26 @@ users_bleuprint = Blueprint('users', __name__)
 
 # Define async function to insert admin user if not exists
 async def insert_admin_user(admin_username: str, admin_password: str):
-    existing_admin = await users_collection.find_one({"username": admin_username})
-    if not existing_admin:
-        try:
-            hashed_password = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt())
-            await users_collection.insert_one({
+    # Attempt to find and update the admin user, or insert if not found
+    hashed_password = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt())
+    try:
+        result = await users_collection.find_one_and_update(
+            {"username": admin_username},
+            {"$setOnInsert": {
                 "username": admin_username,
                 "password": hashed_password,
                 "role": "admin"
-            })
+            }},
+            upsert=True
+        )
+        if result is None:
             print("Admin user created.")
-        except DuplicateKeyError:
-            print("Admin user already exists.")
-        except Exception as e:
-            print(f"An error occurred while inserting the admin user: {e}")
-    else:
-        print("Admin user already exists, skipping creation.")
+        else:
+            print("Admin user already exists, skipping creation.")
+    except DuplicateKeyError:
+        print("Admin user already exists.")
+    except Exception as e:
+        print(f"An error occurred while inserting the admin user: {e}")
 
 @users_bleuprint.route("/api/users", methods=["POST"])
 @jwt_role_required(["admin"])
