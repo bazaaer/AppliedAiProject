@@ -1,25 +1,37 @@
-# Use a slimmed-down Python runtime as a base image
-FROM python:3.11-slim
+# Stage 1: Build stage
+FROM python:3.11-slim AS builder
 
-# Set the working directory in the container
-WORKDIR /backend
+WORKDIR /app
 
-# Copy the requirements file
-COPY requirements.txt ./
-
-# Install build dependencies for any Python packages that may need compilation
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libssl-dev \
-    && pip install --no-cache-dir -r requirements.txt \
-    && apt-get purge -y --auto-remove build-essential libssl-dev \
+    libffi-dev \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the rest of the application code
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . .
 
-# Expose port 5000
+# Stage 2: Final image
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN useradd -m nonrootuser
+
+# Copy application code and dependencies from builder
+COPY --from=builder /app /app
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+RUN chown -R nonrootuser:nonrootuser /app
+
+ENV PYTHONUNBUFFERED=1
+USER nonrootuser
+
 EXPOSE 5000
 
-# Run the application with Gunicorn, using Gevent workers
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "12", "--worker-class", "gevent", "app:app"]
+CMD ["gunicorn", "app:app", "--workers", "8", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:5000", "--timeout", "120"]

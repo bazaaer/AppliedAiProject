@@ -1,63 +1,50 @@
-# app.py
-from gevent import monkey
-monkey.patch_all()
-
-from flask_jwt_extended import JWTManager
-
-# Initialize JWTManager without the app
-jwt = JWTManager()
-
-from flask import Flask, jsonify
-from flask_cors import CORS
+from quart import Quart, redirect, send_from_directory
+from quart_cors import cors
+from quart_jwt_extended import JWTManager
 import os
+from config import ACCESS_EXPIRES, revoked_store
 from dotenv import load_dotenv
-import datetime
-
-from db import token_blacklist_collection
+from api import auth_blueprint, model_blueprint, users_bleuprint, api_keys_blueprint
+from config import ADMIN_USERNAME, ADMIN_PASSWORD
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Quart(__name__, static_folder="static")
+app = cors(app)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'my_precious')
 app.config['JWT_SECRET_KEY'] = app.config['SECRET_KEY']
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=365)
-app.config['JWT_BLACKLIST_ENABLED'] = True
-app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = ACCESS_EXPIRES
+app.config["JWT_BLACKLIST_ENABLED"] = True
+app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access"]
 
-CORS(app)
+jwt = JWTManager(app)
 
-# Initialize JWTManager with the app
-jwt.init_app(app)
-
-# Register JWT callbacks to handle revoked tokens
-@jwt.token_in_blocklist_loader
-def check_if_token_revoked(jwt_header, jwt_payload):
-    jti = jwt_payload['jti']
-    token_in_blacklist = token_blacklist_collection.find_one({'jti': jti})
-    return token_in_blacklist is not None
-
-@jwt.revoked_token_loader
-def revoked_token_callback(jwt_header, jwt_payload):
-    return jsonify({'message': 'Api key has been revoked'}), 401
-
-@jwt.expired_token_loader
-def expired_token_callback(jwt_header, jwt_payload):
-    return jsonify({'message': 'Api key has expired'}), 401
-
-@jwt.invalid_token_loader
-def invalid_token_callback(error):
-    return jsonify({'message': 'Invalid api key'}), 401
-
-@jwt.unauthorized_loader
-def missing_token_callback(error):
-    return jsonify({'message': 'Api key is missing'}), 401
-
-# Import and register blueprints
-from api import auth_blueprint, api_blueprint
 app.register_blueprint(auth_blueprint)
-app.register_blueprint(api_blueprint)
+app.register_blueprint(model_blueprint)
+app.register_blueprint(users_bleuprint)
+app.register_blueprint(api_keys_blueprint)
 
+@jwt.token_in_blacklist_loader
+def check_if_token_is_revoked(decrypted_token):
+    jti = decrypted_token['jti']
+    return revoked_store.get(jti) is not None
+
+@app.route('/api/docs')
+async def swagger_ui():
+    return redirect('/api/docs/index.html')
+    
+@app.route('/api/docs/<path:filename>')
+async def swagger_ui_files(filename):
+    return await send_from_directory(app.static_folder + '/swagger-ui', filename)
+
+@app.before_serving
+async def startup():
+    from api.users import insert_admin_user
+    await insert_admin_user(ADMIN_USERNAME, ADMIN_PASSWORD)
+    from db import create_indexes
+    await create_indexes()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5000)

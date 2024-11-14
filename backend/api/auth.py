@@ -1,103 +1,83 @@
 # api/auth.py
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import (
-    jwt_required,
+from quart import Blueprint, request, jsonify
+from quart_jwt_extended import (
     create_access_token,
     get_jwt_identity,
-    get_jwt
+    get_raw_jwt,
+    get_jwt_claims
 )
 import bcrypt
-import os
-from dotenv import load_dotenv
+from config import ACCESS_EXPIRES, revoked_store
+from db import users_collection
+from api.utils import jwt_role_required
+import pytz
+belgium_tz = pytz.timezone("Europe/Brussels")
 
-import datetime
-from db import users_collection, token_blacklist_collection
-
-# Load environment variables
-load_dotenv()
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "pwd")
-
-# Insert admin user if not exists
-if not users_collection.find_one({"username": ADMIN_USERNAME}):
-    hashed_password = bcrypt.hashpw(ADMIN_PASSWORD.encode('utf-8'), bcrypt.gensalt())
-    users_collection.insert_one({
-        "username": ADMIN_USERNAME,
-        "password": hashed_password,
-        "role": "admin"
-    })
-
-# Auth Blueprint
 auth_blueprint = Blueprint('auth', __name__)
 
 @auth_blueprint.route('/api/login', methods=['POST'])
-def login():
-    data = request.get_json()
+async def login():
+    """
+    Handle user login by validating credentials and generating an API token.
+    This asynchronous function retrieves JSON data from the request, extracts the username and password,
+    and validates them against the stored user data in the database. If the credentials are valid, an
+    API token is generated and returned in the response.
+    Returns:
+        Response: A JSON response containing the API token if login is successful, or an error message
+        if the credentials are invalid or missing.
+    Raises:
+        400: If the username or password is not provided in the request.
+        401: If the username or password is incorrect.
+    """
+
+    data = await request.get_json()
     username = data.get('username')
     password = data.get('password')
 
     if not username or not password:
-        return jsonify({'message': 'Username and password are required'}), 400
+        return jsonify({'msg': 'Username and password are required'}), 400
 
-    # Retrieve user and validate password
-    user = users_collection.find_one({"username": username})
+    user = await users_collection.find_one({"username": username})
     if not user or not bcrypt.checkpw(password.encode('utf-8'), user['password']):
-        return jsonify({'message': 'Invalid username or password'}), 401
+        return jsonify({'msg': 'Invalid username or password'}), 401
 
-    # Generate a long-lived access token (acting as an API key)
-    api_token = create_access_token(identity=username, expires_delta=datetime.timedelta(days=365))
+    role = user.get("role", "user")
+    user_claims = {
+        "role": role,
+    }
+    api_token = create_access_token(
+        identity=username,
+        user_claims=user_claims
+    )
 
-    return jsonify({'api_key': api_token}), 200
+    return jsonify({'api_key': api_token, "role": role}), 200
 
-@auth_blueprint.route('/api/revoke_api_key', methods=['DELETE'])
-@jwt_required()  # Ensure only authenticated users can revoke their API key
-def revoke_api_key():
-    jti = get_jwt()['jti']  # Get the unique identifier of the token
-    exp = get_jwt()['exp']  # Get the expiration time of the token
-    exp_datetime = datetime.datetime.utcfromtimestamp(exp)
-    
-    # Add the token to the blacklist with expiration timestamp
-    token_blacklist_collection.insert_one({'jti': jti, 'exp': exp_datetime})
-    return jsonify({'message': 'API key revoked successfully'}), 200
+@auth_blueprint.route("/api/logout", methods=["DELETE"])
+@jwt_role_required(["admin", "user"])
+async def logout():
+    """
+    Handle user logout by revoking the API token.
+    This asynchronous function retrieves the JWT token identifier (jti) from the request and stores it in the
+    revoked token store to invalidate the token.
+    Returns:
+        Response: A JSON response indicating the token was successfully revoked.
+    """
 
-@auth_blueprint.route('/api/create_user', methods=['POST'])
-@jwt_required()
-def create_user():
+    jti = get_raw_jwt()["jti"]
+    revoked_store.set(jti, "true", ACCESS_EXPIRES * 1.2)
+    return jsonify({"msg": "Token successfully revoked"}), 200
+
+@auth_blueprint.route("/api/protected", methods=["GET"])
+@jwt_role_required(["admin", "user"])
+async def protected():
+    """
+    Protected route that requires a valid API token.
+    This asynchronous function retrieves the current user from the JWT token and returns a welcome message.
+    Returns:
+        Response: A JSON response with a welcome message containing the current user's username
+    """
+
     current_user = get_jwt_identity()
-    claims = get_jwt()
-    if claims.get("role") != "admin":
-        return jsonify({'message': 'Unauthorized'}), 403
-
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    role = data.get('role', 'user')
-
-    if not username or not password:
-        return jsonify({'message': 'Username and password are required'}), 400
-
-    if users_collection.find_one({"username": username}):
-        return jsonify({'message': 'User already exists'}), 400
-
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    users_collection.insert_one({
-        "username": username,
-        "password": hashed_password,
-        "role": role
-    })
-
-    return jsonify({'message': 'User created successfully'}), 201
-
-@auth_blueprint.route('/api/protected', methods=['GET'])
-@jwt_required()
-def protected():
-    current_user = get_jwt_identity()
-    return jsonify({'message': f'Welcome {current_user}, this is a protected route!'}), 200
-
-@auth_blueprint.route('/api/admin', methods=['GET'])
-@jwt_required()
-def admin_route():
-    claims = get_jwt()
-    if claims.get('role') != 'admin':
-        return jsonify({'message': 'Admins only!'}), 403
-    return jsonify({'message': 'Welcome, admin!'}), 200
+    claims = get_jwt_claims()
+    role = claims.get("role")
+    return jsonify({'msg': f"welcome: {current_user}", "role": role}), 200

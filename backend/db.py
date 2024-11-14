@@ -1,5 +1,5 @@
 # db.py
-from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
 
@@ -9,12 +9,13 @@ MONGO_PASSWORD = os.getenv("MONGO_PASSWORD", "examplepassword")
 MONGO_HOST = os.getenv("MONGO_HOST", "localhost")
 MONGO_PORT = os.getenv("MONGO_PORT", "27017")
 
-client = MongoClient(f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/")
+client = AsyncIOMotorClient(f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/")
 db = client['klopta-db']
 
+# Define collections
 users_collection = db['users']
-token_blacklist_collection = db['token_blacklist']
+api_keys_collection = db['api_keys']
 
-# Create indexes
-token_blacklist_collection.create_index('jti', unique=True)
-token_blacklist_collection.create_index('exp', expireAfterSeconds=0)
+async def create_indexes():
+    await users_collection.create_index("username", unique=True)
+    await api_keys_collection.create_index([("user_id", 1), ("name", 1)], unique=True)
