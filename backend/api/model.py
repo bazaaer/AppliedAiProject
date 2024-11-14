@@ -2,9 +2,13 @@
 from quart import Blueprint, request, jsonify
 from api.utils import jwt_or_api_key_required
 from checket.grouper import SentenceGrouper
+from checket.checker import SimilarityEvaluator
 import re
 
 grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.75)
+
+training_embeddings_path = "checket/embeddings.pt"
+similarity_evaluator = SimilarityEvaluator(training_embeddings_path)
 
 model_blueprint = Blueprint('model', __name__)
 
@@ -27,13 +31,13 @@ async def score():
     # Extract 'text' and remove HTML tags
     html_text = request_data.get("text", "")
     plain_text = re.sub(r'<[^>]*>', '', html_text) if html_text else ""
-    print(plain_text)
 
     result = grouper.group_consecutive_similar_sentences(plain_text)
 
     response = []
     for sentence, group_index in result:
-        response.append({"sentence": sentence, "group": group_index})
+        score = similarity_evaluator.topk_mean_similarity_score(sentence,k=8)
+        response.append({"sentence": sentence, "group": group_index, "score": score})
 
     return jsonify(response), 200
 
