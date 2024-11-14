@@ -48,4 +48,5 @@ USER nonrootuser
 # Expose port 5000
 EXPOSE 5000
 
-CMD ["hypercorn", "app:app", "--workers", "8", "--bind", "0.0.0.0:5000"]
+# Command to run the application using Gunicorn with Uvicorn workers
+CMD ["gunicorn", "app:app", "--workers", "8", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:5000", "--timeout", "120"]
