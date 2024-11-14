@@ -488,7 +488,7 @@ components:
     ApiKey:
       type: object
       properties:
-        api_key_id:
+        name:
           type: string
         visible_key:
           type: string
