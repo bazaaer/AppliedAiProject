@@ -8,7 +8,7 @@ class SimilarityEvaluator:
             device if device else ("cuda" if torch.cuda.is_available() else "cpu")
         )
         self.model = SentenceTransformer(
-            "Checket_Antwerpen_Huisstijl_MiniLM", device=device
+            "ODeNy/Checket_Antwerpen_Huisstijl_MiniLM", device=device
         )
         self.training_embeddings = torch.load(
             training_embeddings_path, weights_only=True
