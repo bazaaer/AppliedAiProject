@@ -1,7 +1,6 @@
 import spacy
 import cupy as cp
 
-
 class SentenceGrouper:
     def __init__(self, model="nl_core_news_lg", similarity_threshold=0.75):
         self.nlp = spacy.load(model)
@@ -28,6 +27,7 @@ class SentenceGrouper:
 
         valid_sentences = []
         valid_embeddings = []
+        invalid_sentences = []
 
         for sent in doc.sents:
             sentence_text = sent.text.strip()
@@ -36,17 +36,19 @@ class SentenceGrouper:
                 if not cp.all(embedding == 0):
                     valid_sentences.append(sentence_text)
                     valid_embeddings.append(embedding)
+                else:
+                    invalid_sentences.append(sentence_text)  # Track invalid sentences
 
         if not valid_embeddings:
-            return [("No valid sentences with embeddings found.", 0)]
+            raise ValueError("No valid sentence embeddings found in the provided text.")
 
         valid_embeddings = cp.stack(valid_embeddings)
-
         similarities = self._cosine_similarity(valid_embeddings)
 
         labeled_sentences = []
         group_idx = 0
         current_group = [valid_sentences[0]]
+        invalid_group = []  # Temporary list for invalid sentences
 
         for i in range(1, len(valid_sentences)):
             similarity = similarities[i, i - 1].item()
@@ -54,25 +56,43 @@ class SentenceGrouper:
             if similarity >= self.similarity_threshold:
                 current_group.append(valid_sentences[i])
             else:
-                if current_group:
-                    labeled_sentences.extend(
-                        [(sent, group_idx) for sent in current_group if sent]
-                    )
-                group_idx += 1
+                if invalid_sentences:  # There are invalid sentences between valid groups
+                    # Handle invalid sentences as in-between group
+                    if invalid_group:
+                        # Add previous invalid group as a new group
+                        labeled_sentences.append((" ".join(invalid_group), -1))
+                        invalid_group = []  # Reset invalid group
+                    # Add the current valid group
+                    group_text = " ".join(current_group)
+                    labeled_sentences.append((group_text, group_idx))
+                    group_idx += 1
+                else:
+                    # Add the valid group without interspersed invalid sentences
+                    group_text = " ".join(current_group)
+                    labeled_sentences.append((group_text, group_idx))
+                    group_idx += 1
+
+                # Reset the current group and add the invalid sentences to an in-between group
                 current_group = [valid_sentences[i]]
 
+                # Add the invalid sentences as in-between group
+                if invalid_sentences:
+                    invalid_group.append(invalid_sentences.pop(0))
+
+        # After the loop, check if there are any remaining invalid sentences to group
+        if invalid_group:
+            labeled_sentences.append((" ".join(invalid_group), -1))
+
+        # Add the last valid group
         if current_group:
-            labeled_sentences.extend(
-                [(sent, group_idx) for sent in current_group if sent]
-            )
+            group_text = " ".join(current_group)
+            labeled_sentences.append((group_text, group_idx))
 
         return labeled_sentences
 
 
 if __name__ == "__main__":
-    test_text = """
-    Vanaf 28 september 2024 neemt Antwerpen de fakkel van het Ensorjaar over van Oostende met een veelzijdig en verrassend expoprogramma. Wat Antwerpen heeft met Ensor? Een gedeelde, verrassende blik voorbij het alledaagse. Die gaat al terug tot de tijd van Ensor zelf. Niet toevallig kwamen veel van zijn werken nog tijdens zijn leven in de Scheldestad terecht. Ze vormen vandaag de kern van de Ensor-collectie van het KMSKA en een vertrekpunt voor het Ensor Research Project. In zijn oeuvre laat Ensor zich - net als Antwerpen - kennen als een game-changer: vaak met een knipoog, soms dwars en altijd innovatief. Eigenschappen die Ensor tijdloos en relevant maken. Antwerpen kiest daarom voor verrassende invalshoeken om zijn werk te belichten. Hoe zien we echo’s van Ensor in de kunst, mode en fotografie? Hoe blijft hij inspireren en wat kunnen we vandaag nog van hem leren?
-    """
+    test_text = """[youtube](https://www.youtube.com). jurreandenys@gmail.com. Ik ben cool. De appel is gay."""
 
     grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.75)
 
