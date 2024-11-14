@@ -1,7 +1,6 @@
 import torch
 from sentence_transformers import SentenceTransformer
 
-
 class SimilarityEvaluator:
     def __init__(self, training_embeddings_path, device=None):
         self.device = (
