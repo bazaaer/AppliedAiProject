@@ -16,7 +16,6 @@ app.config['JWT_SECRET_KEY'] = app.config['SECRET_KEY']
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = ACCESS_EXPIRES
 app.config["JWT_BLACKLIST_ENABLED"] = True
 app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access"]
-app.config["PROVIDE_AUTOMATIC_OPTIONS"] = True
 
 jwt = JWTManager(app)
 
