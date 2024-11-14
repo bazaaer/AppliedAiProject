@@ -5,6 +5,7 @@ import os
 from config import ACCESS_EXPIRES, revoked_store
 from dotenv import load_dotenv
 from api import auth_blueprint, model_blueprint, users_bleuprint, api_keys_blueprint
+from config import ADMIN_USERNAME, ADMIN_PASSWORD
 
 load_dotenv()
 
@@ -40,7 +41,7 @@ async def swagger_ui_files(filename):
 @app.before_serving
 async def startup():
     from api.users import insert_admin_user
-    await insert_admin_user()
+    await insert_admin_user(ADMIN_USERNAME, ADMIN_PASSWORD)
     from db import create_indexes
     await create_indexes()
 

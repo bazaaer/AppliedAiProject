@@ -1,22 +1,30 @@
 # api/users.py
 from quart import Blueprint, request, jsonify
 import bcrypt
-from config import ADMIN_USERNAME, ADMIN_PASSWORD
 from db import users_collection
 from api.utils import jwt_role_required
+from pymongo.errors import DuplicateKeyError
 
 users_bleuprint = Blueprint('users', __name__)
 
 # Define async function to insert admin user if not exists
-async def insert_admin_user():
-    existing_admin = await users_collection.find_one({"username": ADMIN_USERNAME})
+async def insert_admin_user(admin_username: str, admin_password: str):
+    existing_admin = await users_collection.find_one({"username": admin_username})
     if not existing_admin:
-        hashed_password = bcrypt.hashpw(ADMIN_PASSWORD.encode('utf-8'), bcrypt.gensalt())
-        await users_collection.insert_one({
-            "username": ADMIN_USERNAME,
-            "password": hashed_password,
-            "role": "admin"
-        })
+        try:
+            hashed_password = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt())
+            await users_collection.insert_one({
+                "username": admin_username,
+                "password": hashed_password,
+                "role": "admin"
+            })
+            print("Admin user created.")
+        except DuplicateKeyError:
+            print("Admin user already exists.")
+        except Exception as e:
+            print(f"An error occurred while inserting the admin user: {e}")
+    else:
+        print("Admin user already exists, skipping creation.")
 
 @users_bleuprint.route("/api/users", methods=["POST"])
 @jwt_role_required(["admin"])
