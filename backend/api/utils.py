@@ -3,7 +3,9 @@ from db import users_collection, api_keys_collection
 import bcrypt
 from functools import wraps
 from quart import jsonify, request
-from quart_jwt_extended import jwt_required, get_jwt_claims
+from quart_jwt_extended import (
+    verify_jwt_in_request, get_jwt_claims, exceptions as jwt_exceptions, jwt_required
+)
 from datetime import datetime, timezone
 import pytz
 belgium_tz = pytz.timezone("Europe/Brussels")
@@ -43,24 +45,53 @@ async def validate_api_key(api_key):
     # If no valid key is found, return None
     return None
 
-def api_key_required(fn):
-    @wraps(fn)
-    async def wrapper(*args, **kwargs):
-        api_key = request.headers.get("X-API-Key")
-        if not api_key:
-            return jsonify({"msg": "API key required"}), 401
+def jwt_or_api_key_required(allowed_roles):
+    def decorator(fn):
+        @wraps(fn)
+        async def wrapper(*args, **kwargs):
+            # Try to verify JWT
+            try:
+                await verify_jwt_in_request()
+                # If JWT is valid, get the claims
+                claims = get_jwt_claims()
+                role = claims.get("role")
+                if role not in allowed_roles:
+                    return jsonify({"msg": "Access denied"}), 403
+                # Proceed with the request
+                return await fn(*args, **kwargs)
+            except jwt_exceptions.NoAuthorizationError:
+                # No JWT found, check for API key
+                api_key = request.headers.get("X-API-Key")
+                if not api_key:
+                    return jsonify({"msg": "Authorization required"}), 401
 
-        # Validate the API key
-        validation_result = await validate_api_key(api_key)
-        if not validation_result:
-            return jsonify({"msg": "Invalid or revoked API key"}), 403
+                # Validate the API key
+                validation_result = await validate_api_key(api_key)
+                if not validation_result:
+                    return jsonify({"msg": "Invalid or revoked API key"}), 403
 
-        # Check if the key is expired
-        if validation_result.get("expired"):
-            expires_at = validation_result["expires_at"].astimezone(belgium_tz).strftime("%Y-%m-%d %H:%M:%S")
-            return jsonify({"msg": f"API key expired on {expires_at}"}), 403
+                # Check if the key is expired
+                if validation_result.get("expired"):
+                    expires_at = validation_result["expires_at"].astimezone(belgium_tz).strftime("%Y-%m-%d %H:%M:%S")
+                    return jsonify({"msg": f"API key expired on {expires_at}"}), 403
 
-        # Proceed with the request if the API key is valid
-        return await fn(*args, **kwargs)
+                # Get the user's role from the validation result
+                user = validation_result["user"]
+                role = user.get("role")
+                if role not in allowed_roles:
+                    return jsonify({"msg": "Access denied"}), 403
 
-    return wrapper
+                # Optionally, set the user in the request context
+                request.current_user = user
+
+                # Proceed with the request if the API key is valid
+                return await fn(*args, **kwargs)
+            except jwt_exceptions.JWTDecodeError:
+                # JWT is present but invalid
+                return jsonify({"msg": "Invalid JWT token"}), 401
+            except Exception as e:
+                # Other exceptions
+                return jsonify({"msg": str(e)}), 400
+
+        return wrapper
+    return decorator
