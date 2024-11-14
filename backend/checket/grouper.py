@@ -1,14 +1,33 @@
 import spacy
 import cupy as cp
+from typing import List, Tuple
 
 class SentenceGrouper:
-    def __init__(self, model="nl_core_news_lg", similarity_threshold=0.75):
+    """
+    A class for grouping consecutive, semantically similar sentences from text based on cosine similarity.
+
+    This class leverages SpaCy for sentence tokenization and embedding generation, with GPU acceleration
+    via CuPy for efficient cosine similarity calculations. Sentences are grouped together when their similarity
+    score meets a specified threshold.
+
+    Parameters:
+    - model (str): The SpaCy model to load for language processing (default: "nl_core_news_md").
+    - similarity_threshold (float): The minimum cosine similarity score required for sentences to be grouped (default: 0.75).
+
+    Methods:
+    - group_consecutive_similar_sentences(text: str) -> List[Tuple[str, int]]:
+        Groups consecutive sentences in the input text by semantic similarity. Each sentence group is returned
+        as a tuple containing the grouped text and its associated group index. Sentences that lack valid embeddings
+        (e.g., empty or link-only sentences) are marked with an index of -1, preserving the original sentence order
+        within the output. Raises a ValueError if an empty string is provided as input.
+    """
+    def __init__(self, model: str = "nl_core_news_md", similarity_threshold: float = 0.75):
         self.nlp = spacy.load(model)
         spacy.prefer_gpu()
         self.similarity_threshold = similarity_threshold
 
     @staticmethod
-    def _cosine_similarity(x, y=None):
+    def _compute_cosine_similarity(x: cp.ndarray, y: cp.ndarray = None) -> cp.ndarray:
         if y is None:
             y = x
 
@@ -19,10 +38,10 @@ class SentenceGrouper:
         norm_x = cp.linalg.norm(x, axis=1, keepdims=True)
         norm_y = cp.linalg.norm(y, axis=1, keepdims=True)
 
-        cosine_sim = dot_product / (norm_x * norm_y.T)
-        return cosine_sim
+        cosine_similarity = dot_product / (norm_x * norm_y.T)
+        return cosine_similarity
 
-    def group_consecutive_similar_sentences(self, text):
+    def group_consecutive_similar_sentences(self, text: str) -> List[Tuple[str, int]]:
         doc = self.nlp(text)
 
         valid_sentences = []
@@ -37,18 +56,18 @@ class SentenceGrouper:
                     valid_sentences.append(sentence_text)
                     valid_embeddings.append(embedding)
                 else:
-                    invalid_sentences.append(sentence_text)  # Track invalid sentences
+                    invalid_sentences.append(sentence_text)
 
         if not valid_embeddings:
             raise ValueError("No valid sentence embeddings found in the provided text.")
 
         valid_embeddings = cp.stack(valid_embeddings)
-        similarities = self._cosine_similarity(valid_embeddings)
+        similarities = self._compute_cosine_similarity(valid_embeddings)
 
-        labeled_sentences = []
+        grouped_sentences = []
         group_idx = 0
         current_group = [valid_sentences[0]]
-        invalid_group = []  # Temporary list for invalid sentences
+        pending_invalid_sentences = []
 
         for i in range(1, len(valid_sentences)):
             similarity = similarities[i, i - 1].item()
@@ -56,43 +75,28 @@ class SentenceGrouper:
             if similarity >= self.similarity_threshold:
                 current_group.append(valid_sentences[i])
             else:
-                if invalid_sentences:  # There are invalid sentences between valid groups
-                    # Handle invalid sentences as in-between group
-                    if invalid_group:
-                        # Add previous invalid group as a new group
-                        labeled_sentences.append((" ".join(invalid_group), -1))
-                        invalid_group = []  # Reset invalid group
-                    # Add the current valid group
-                    group_text = " ".join(current_group)
-                    labeled_sentences.append((group_text, group_idx))
-                    group_idx += 1
-                else:
-                    # Add the valid group without interspersed invalid sentences
-                    group_text = " ".join(current_group)
-                    labeled_sentences.append((group_text, group_idx))
-                    group_idx += 1
+                if pending_invalid_sentences:
+                    grouped_sentences.append((" ".join(pending_invalid_sentences), -1))
+                    pending_invalid_sentences.clear()
 
-                # Reset the current group and add the invalid sentences to an in-between group
+                grouped_sentences.append((" ".join(current_group), group_idx))
+                group_idx += 1
                 current_group = [valid_sentences[i]]
 
-                # Add the invalid sentences as in-between group
                 if invalid_sentences:
-                    invalid_group.append(invalid_sentences.pop(0))
+                    pending_invalid_sentences.append(invalid_sentences.pop(0))
 
-        # After the loop, check if there are any remaining invalid sentences to group
-        if invalid_group:
-            labeled_sentences.append((" ".join(invalid_group), -1))
+        if pending_invalid_sentences:
+            grouped_sentences.append((" ".join(pending_invalid_sentences), -1))
 
-        # Add the last valid group
         if current_group:
-            group_text = " ".join(current_group)
-            labeled_sentences.append((group_text, group_idx))
+            grouped_sentences.append((" ".join(current_group), group_idx))
 
-        return labeled_sentences
+        return grouped_sentences
 
 
 if __name__ == "__main__":
-    test_text = """[youtube](https://www.youtube.com). Ik ben cool. De appel is gay."""
+    test_text = """[youtube](https://www.youtube.com).\n\r HELLO!!"""
 
     grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.75)
 
