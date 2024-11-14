@@ -16,6 +16,7 @@ app.config['JWT_SECRET_KEY'] = app.config['SECRET_KEY']
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = ACCESS_EXPIRES
 app.config["JWT_BLACKLIST_ENABLED"] = True
 app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access"]
+app.config["PROVIDE_AUTOMATIC_OPTIONS"] = True
 
 jwt = JWTManager(app)
 
@@ -24,7 +25,7 @@ app.register_blueprint(model_blueprint)
 app.register_blueprint(users_bleuprint)
 app.register_blueprint(api_keys_blueprint)
 
-@jwt.token_in_blacklist_loader
+@jwt.token_in_blocklist_loader
 def check_if_token_is_revoked(decrypted_token):
     jti = decrypted_token['jti']
     return revoked_store.get(jti) is not None
