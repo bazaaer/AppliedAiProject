@@ -1,31 +1,52 @@
 import spacy
 import cupy as cp
+from typing import List, Tuple
 
 class SentenceGrouper:
-    def __init__(self, model="nl_core_news_lg", similarity_threshold=0.75):
+    """
+    A class for grouping consecutive, semantically similar sentences from text based on cosine similarity.
+
+    This class leverages SpaCy for sentence tokenization and embedding generation, with GPU acceleration
+    via CuPy for efficient cosine similarity calculations. Sentences are grouped together when their similarity
+    score meets a specified threshold.
+
+    Parameters:
+    - model (str): The SpaCy model to load for language processing (default: "nl_core_news_md").
+    - similarity_threshold (float): The minimum cosine similarity score required for sentences to be grouped (default: 0.75).
+
+    Methods:
+    - group_consecutive_similar_sentences(text: str) -> List[Tuple[str, int]]:
+        Groups consecutive sentences in the input text by semantic similarity. Each sentence group is returned
+        as a tuple containing the grouped text and its associated group index. Sentences that lack valid embeddings
+        (e.g., empty or link-only sentences) are marked with an index of -1, preserving the original sentence order
+        within the output. Raises a ValueError if an empty string is provided as input.
+    """
+    def __init__(self, model: str = "nl_core_news_md", similarity_threshold: float = 0.75):
         self.nlp = spacy.load(model)
         spacy.prefer_gpu()
         self.similarity_threshold = similarity_threshold
 
-    def _cosine_similarity(self, X, Y=None):
-        if Y is None:
-            Y = X
+    @staticmethod
+    def _compute_cosine_similarity(x: cp.ndarray, y: cp.ndarray = None) -> cp.ndarray:
+        if y is None:
+            y = x
 
-        X = cp.asarray(X)
-        Y = cp.asarray(Y)
+        x = cp.asarray(x)
+        y = cp.asarray(y)
 
-        dot_product = cp.dot(X, Y.T)
-        norm_X = cp.linalg.norm(X, axis=1, keepdims=True)
-        norm_Y = cp.linalg.norm(Y, axis=1, keepdims=True)
+        dot_product = cp.dot(x, y.T)
+        norm_x = cp.linalg.norm(x, axis=1, keepdims=True)
+        norm_y = cp.linalg.norm(y, axis=1, keepdims=True)
 
-        cosine_sim = dot_product / (norm_X * norm_Y.T)
-        return cosine_sim
+        cosine_similarity = dot_product / (norm_x * norm_y.T)
+        return cosine_similarity
 
-    def group_consecutive_similar_sentences(self, text):
+    def group_consecutive_similar_sentences(self, text: str) -> List[Tuple[str, int]]:
         doc = self.nlp(text)
 
         valid_sentences = []
         valid_embeddings = []
+        invalid_sentences = []
 
         for sent in doc.sents:
             sentence_text = sent.text.strip()
@@ -34,18 +55,19 @@ class SentenceGrouper:
                 if not cp.all(embedding == 0):
                     valid_sentences.append(sentence_text)
                     valid_embeddings.append(embedding)
-
+                else:
+                    invalid_sentences.append(sentence_text)
 
         if not valid_embeddings:
-            return [("No valid sentences with embeddings found.", 0)]
+            raise ValueError("No valid sentence embeddings found in the provided text.")
 
         valid_embeddings = cp.stack(valid_embeddings)
+        similarities = self._compute_cosine_similarity(valid_embeddings)
 
-        similarities = self._cosine_similarity(valid_embeddings)
-
-        labeled_sentences = []
-        group_index = 0
+        grouped_sentences = []
+        group_idx = 0
         current_group = [valid_sentences[0]]
+        pending_invalid_sentences = []
 
         for i in range(1, len(valid_sentences)):
             similarity = similarities[i, i - 1].item()
@@ -53,23 +75,30 @@ class SentenceGrouper:
             if similarity >= self.similarity_threshold:
                 current_group.append(valid_sentences[i])
             else:
-                if current_group:
-                    labeled_sentences.extend([(sentence, group_index) for sentence in current_group if sentence])
-                group_index += 1
+                if pending_invalid_sentences:
+                    grouped_sentences.append((" ".join(pending_invalid_sentences), -1))
+                    pending_invalid_sentences.clear()
+
+                grouped_sentences.append((" ".join(current_group), group_idx))
+                group_idx += 1
                 current_group = [valid_sentences[i]]
 
-        if current_group:
-            labeled_sentences.extend([(sentence, group_index) for sentence in current_group if sentence])
+                if invalid_sentences:
+                    pending_invalid_sentences.append(invalid_sentences.pop(0))
 
-        return labeled_sentences
+        if pending_invalid_sentences:
+            grouped_sentences.append((" ".join(pending_invalid_sentences), -1))
+
+        if current_group:
+            grouped_sentences.append((" ".join(current_group), group_idx))
+
+        return grouped_sentences
 
 
 if __name__ == "__main__":
-    test_text = """
-    Vanaf 28 september 2024 neemt Antwerpen de fakkel van het Ensorjaar over van Oostende met een veelzijdig en verrassend expoprogramma. Wat Antwerpen heeft met Ensor? Een gedeelde, verrassende blik voorbij het alledaagse. Die gaat al terug tot de tijd van Ensor zelf. Niet toevallig kwamen veel van zijn werken nog tijdens zijn leven in de Scheldestad terecht. Ze vormen vandaag de kern van de Ensor-collectie van het KMSKA en een vertrekpunt voor het Ensor Research Project. In zijn oeuvre laat Ensor zich - net als Antwerpen - kennen als een game-changer: vaak met een knipoog, soms dwars en altijd innovatief. Eigenschappen die Ensor tijdloos en relevant maken. Antwerpen kiest daarom voor verrassende invalshoeken om zijn werk te belichten. Hoe zien we echo’s van Ensor in de kunst, mode en fotografie? Hoe blijft hij inspireren en wat kunnen we vandaag nog van hem leren?
-    """
+    test_text = """[youtube](https://www.youtube.com).\n\r HELLO!!"""
 
-    grouper = SentenceGrouper(model="nl_core_news_lg", similarity_threshold=0.75)
+    grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.75)
 
     result = grouper.group_consecutive_similar_sentences(test_text)
 
