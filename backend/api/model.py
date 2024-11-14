@@ -1,15 +1,22 @@
 # api/model.py
 from quart import Blueprint, request, jsonify
-from api.utils import api_key_required
+from api.utils import jwt_or_api_key_required
 
-api_blueprint = Blueprint('api', __name__)
+model_blueprint = Blueprint('model', __name__)
 
-@api_blueprint.route('/api', methods=['GET'])
+@model_blueprint.route('/api', methods=['GET'])
 async def index():
-    return 'Klopta API is running!'
+    """
+    Check if the API is running.
+    This asynchronous function returns a JSON response to indicate that the API is running.
+    Returns:
+        Response: A JSON response with a message indicating that the API is running.
+    """
 
-@api_blueprint.route("/api/rewrite", methods=["POST"])
-@api_key_required
+    return jsonify({"msg": "Klopta API is running"}), 200
+
+@model_blueprint.route("/api/rewrite", methods=["POST"])
+@jwt_or_api_key_required(["admin", "user"])
 async def rewrite():
-    # Your rewrite logic here
-    return jsonify({"msg": "Rewrite successful"}), 200
+    request_data = await request.get_json()
+    return jsonify({"msg": "rewrite successful", "data": request_data}), 200
