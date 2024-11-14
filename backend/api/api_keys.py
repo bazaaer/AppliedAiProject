@@ -1,10 +1,9 @@
 # api/api_keys.py
 from quart import Blueprint, request, jsonify
 from quart_jwt_extended import get_jwt_identity
-import bcrypt
+import hashlib
 import secrets
 from db import users_collection, api_keys_collection
-from bson import ObjectId
 from api.utils import jwt_role_required
 from datetime import datetime, timezone, timedelta
 import pytz
@@ -30,22 +29,39 @@ async def generate_api_key():
     if not username:
         return jsonify({"msg": "Username is required"}), 400
 
-    # Find the user in the database
     user = await users_collection.find_one({"username": username})
     if not user:
         return jsonify({"msg": "User not found"}), 404
 
+    # Get the API key name from the request JSON
+    data = await request.get_json()
+    try:
+        key_name = data.get("name")
+    except AttributeError:
+        key_name = None
+    
+    if not key_name:
+        return jsonify({"msg": "API key name is required"}), 400
+
+    # Check if an API key with the same name already exists for this user
+    existing_key = await api_keys_collection.find_one({
+        "user_id": user["_id"],
+        "name": key_name
+    })
+    if existing_key:
+        return jsonify({"msg": "An API key with this name already exists"}), 400
+
     # Generate a new API key
     new_api_key = secrets.token_hex(32)
-    hashed_key = bcrypt.hashpw(new_api_key.encode('utf-8'), bcrypt.gensalt())
+    hashed_key = hashlib.sha256(new_api_key.encode('utf-8')).hexdigest()
 
-    # Calculate expiration date (one year from creation date)
     expires_at = datetime.now(timezone.utc) + timedelta(seconds=60)
 
-    # Store the hashed API key with expiration date and other details
+    # Store the API key with the given name, expiration date, and other details
     await api_keys_collection.insert_one({
         "user_id": user["_id"],
         "username": username,
+        "name": key_name,
         "api_key": hashed_key,
         "created_at": datetime.now(timezone.utc),
         "expires_at": expires_at,
@@ -73,14 +89,13 @@ async def list_api_keys():
     # Prepare the API keys for display
     api_key_list = []
     for key_record in api_keys:
-        # Ensure both datetimes are timezone-aware
         expires_at = key_record["expires_at"]
         if expires_at.tzinfo is None:
             expires_at = expires_at.replace(tzinfo=timezone.utc)
         
         is_expired = datetime.now(timezone.utc) > expires_at
         api_key_list.append({
-            "api_key_id": str(key_record["_id"]),
+            "name": key_record["name"],
             "visible_key": "..." + key_record["visible_key_part"],
             "created_at": key_record["created_at"].astimezone(belgium_tz).strftime("%Y-%m-%d %H:%M:%S"),
             "expires_at": expires_at.astimezone(belgium_tz).strftime("%Y-%m-%d %H:%M:%S"),
@@ -107,30 +122,21 @@ async def revoke_api_key():
     """
 
     data = await request.get_json()
-    api_key_id = data.get("api_key_id")
+    api_key_name = data.get("name")
 
-    if not api_key_id:
-        return jsonify({"msg": "API Key ID is required"}), 400
-
-    try:
-        # Convert the api_key_id to ObjectId
-        api_key_object_id = ObjectId(api_key_id)
-    except Exception:
-        return jsonify({"msg": "Invalid API Key ID format"}), 400
-
-    # Find the API key in the database
-    api_key_record = await api_keys_collection.find_one({"_id": api_key_object_id})
-    if not api_key_record:
-        return jsonify({"msg": "API key not found"}), 404
+    if not api_key_name:
+        return jsonify({"msg": "API Key name is required"}), 400
 
     username = get_jwt_identity()
 
-    if api_key_record['username'] != username:
-        return jsonify({"msg": "You are not authorized to revoke this API key"}), 403
+    # Find the API key by name and username
+    api_key_record = await api_keys_collection.find_one({"username": username, "name": api_key_name})
+    if not api_key_record:
+        return jsonify({"msg": "API key not found"}), 404
 
     # Update the status of the API key to "revoked"
     await api_keys_collection.update_one(
-        {"_id": api_key_object_id},
+        {"_id": api_key_record["_id"]},
         {"$set": {"status": "revoked"}}
     )
 

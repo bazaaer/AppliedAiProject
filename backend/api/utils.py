@@ -1,6 +1,6 @@
 # api/utils.py
 from db import users_collection, api_keys_collection
-import bcrypt
+import hashlib
 from functools import wraps
 from quart import jsonify, request
 from quart_jwt_extended import (
@@ -26,23 +26,24 @@ def jwt_role_required(allowed_roles):
     return decorator
 
 async def validate_api_key(api_key):
-    # Search for an active API key in the api_keys collection
-    async for key_record in api_keys_collection.find({"status": "active"}):
-        if bcrypt.checkpw(api_key.encode('utf-8'), key_record["api_key"]):
-            # Ensure expires_at is timezone-aware
-            expires_at = key_record["expires_at"]
-            if expires_at.tzinfo is None:
-                expires_at = expires_at.replace(tzinfo=timezone.utc)
-
-            # Check if the API key has expired
-            if datetime.now(timezone.utc) > expires_at:
-                return {"expired": True, "expires_at": expires_at}
-
-            # If the key is valid and not expired, retrieve and return the user
-            user = await users_collection.find_one({"_id": key_record["user_id"]})
-            return {"user": user}
+    hashed_key = hashlib.sha256(api_key.encode('utf-8')).hexdigest()
     
-    # If no valid key is found, return None
+    key_record = await api_keys_collection.find_one({
+        "status": "active",
+        "api_key": hashed_key
+    })
+    
+    if key_record:
+        expires_at = key_record["expires_at"]
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+        if datetime.now(timezone.utc) > expires_at:
+            return {"expired": True, "expires_at": expires_at}
+
+        user = await users_collection.find_one({"_id": key_record["user_id"]})
+        return {"user": user}
+
     return None
 
 def jwt_or_api_key_required(allowed_roles):

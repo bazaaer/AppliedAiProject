@@ -18,3 +18,4 @@ api_keys_collection = db['api_keys']
 
 async def create_indexes():
     await users_collection.create_index("username", unique=True)
+    await api_keys_collection.create_index([("user_id", 1), ("name", 1)], unique=True)
