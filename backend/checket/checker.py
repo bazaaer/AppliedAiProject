@@ -34,7 +34,7 @@ if __name__ == "__main__":
     similarity_evaluator = SimilarityEvaluator(training_embeddings_path)
 
     sentence, score = similarity_evaluator.topk_mean_similarity_score(
-        "De Britse realityster en presentatrice <strong>Narinder Kaur</strong> (51) ligt zwaar onder vuur na haar uithaal naar prinses Kate op X."
+        """De Britse realityster en presentatrice <strong>Narinder Kaur</strong> (51) ligt zwaar onder vuur na haar uithaal naar prinses Kate op "X"."""
     )
 
     print(f"Sentence: {sentence}\nTop-K Mean Similarity Score: {score:.8f}")
