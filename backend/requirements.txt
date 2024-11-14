@@ -8,3 +8,4 @@ uvicorn
 redis
 gunicorn
 pytz
+Flask==3.0.0
