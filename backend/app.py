@@ -25,7 +25,7 @@ app.register_blueprint(model_blueprint)
 app.register_blueprint(users_bleuprint)
 app.register_blueprint(api_keys_blueprint)
 
-@jwt.token_in_blocklist_loader
+@jwt.token_in_blacklist_loader
 def check_if_token_is_revoked(decrypted_token):
     jti = decrypted_token['jti']
     return revoked_store.get(jti) is not None
