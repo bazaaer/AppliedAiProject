@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     similarity_evaluator = SimilarityEvaluator(training_embeddings_path)
 
-    sentence = """Op 16 november meert Sinterklaas met de boot aan in Antwerpen. Kom jij Sinterklaas en zijn kleurrijk gevolg begroeten langs de route?"""
+    sentence = """Sinterklaas arriveert aan het stadhuis rond 14.45 uur en zal daar, vanop het balkon aan het Schoon Verdiep, de kinderen en hun mama’s en papa’s toespreken."""
 
     score = similarity_evaluator.topk_mean_similarity_score(sentence,k=8)
 
