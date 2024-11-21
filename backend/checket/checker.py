@@ -32,7 +32,7 @@ class SimilarityEvaluator:
         """
         self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.model = SentenceTransformer("ODeNy/Checket_Antwerpen_Huisstijl_MiniLM", device=device)
+        self.model = SentenceTransformer("ODeNy/ChecketV2", device=device)
 
         self.base_embeddings = torch.load(base_embeddings_path, weights_only=True).to(self.device)
 

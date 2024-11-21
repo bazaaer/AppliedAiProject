@@ -23,7 +23,7 @@ async def index():
 
     return jsonify({"msg": "Klopta API is running"}), 200
 
-@model_blueprint.route("/api/score", methods=["POST"])
+@model_blueprint.route("/api/texts/score", methods=["POST"])
 # @jwt_or_api_key_required(["admin", "user"])
 async def score():
     request_data = await request.get_json()
@@ -41,7 +41,7 @@ async def score():
 
     return jsonify(response), 200
 
-@model_blueprint.route("/api/rewrite", methods=["POST"])
+@model_blueprint.route("/api/texts/rewrite", methods=["POST"])
 @jwt_or_api_key_required(["admin", "user"])
 async def rewrite():
     request_data = await request.get_json()

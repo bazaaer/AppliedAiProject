@@ -34,4 +34,6 @@ USER nonrootuser
 
 EXPOSE 5000
 
+RUN python3 generate_openapi.py
+
 CMD ["gunicorn", "app:app", "--workers", "8", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:5000", "--timeout", "120"]

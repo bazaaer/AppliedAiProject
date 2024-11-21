@@ -52,7 +52,7 @@ async def login():
 
     return jsonify({'api_key': api_token, "role": role}), 200
 
-@auth_blueprint.route("/api/logout", methods=["DELETE"])
+@auth_blueprint.route("/api/logout", methods=["POST"])
 @jwt_role_required(["admin", "user"])
 async def logout():
     """

@@ -356,7 +356,7 @@ paths:
       security:
         - BearerAuth: []
   /api/logout:
-    delete:
+    post:
       summary: Logout and revoke JWT token
       description: Requires admin or user role.
       tags:
@@ -424,13 +424,13 @@ paths:
               schema:
                 type: string
                 example: Klopta API is running!
-  /api/rewrite:
+  /api/texts/rewrite:
     post:
       summary: Rewrite text
       description: >
         Requires a valid API key. The API key can be obtained by logging in and generating an API key.
       tags:
-        - Rewrite
+        - Model
       requestBody:
         required: true
         content:
