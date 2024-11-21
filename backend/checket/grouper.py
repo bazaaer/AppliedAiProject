@@ -1,5 +1,10 @@
+import time
+
 import spacy
 import cupy as cp
+import html2text
+import markdown
+import re
 from typing import List, Tuple
 
 class SentenceGrouper:
@@ -25,6 +30,8 @@ class SentenceGrouper:
         self.nlp = spacy.load(model)
         spacy.prefer_gpu()
         self.similarity_threshold = similarity_threshold
+        self.html2text = html2text.HTML2Text()
+        self.markdown = markdown.Markdown()
 
     @staticmethod
     def _compute_cosine_similarity(x: cp.ndarray, y: cp.ndarray = None) -> cp.ndarray:
@@ -40,6 +47,17 @@ class SentenceGrouper:
 
         cosine_similarity = dot_product / (norm_x * norm_y.T)
         return cosine_similarity
+
+    def _html_to_markdown_to_html(self, html_text: str) -> str:
+        markdown_text = self.html2text.handle(html_text)
+        return self.markdown.convert(markdown_text)
+
+    def _is_markdown_sentence(self, sentence: str) -> bool:
+        """
+        Check if the sentence contains Markdown formatting (e.g., **bold**, *italic*, etc.).
+        """
+        markdown_patterns = [r'\*\*.*\*\*', r'\*.*\*', r'~~.*~~', r'__.*__', r'``.*``']
+        return any(re.search(pattern, sentence) for pattern in markdown_patterns)
 
     def group_consecutive_similar_sentences(self, text: str) -> List[Tuple[str, int]]:
         doc = self.nlp(text)
@@ -72,7 +90,10 @@ class SentenceGrouper:
         for i in range(1, len(valid_sentences)):
             similarity = similarities[i, i - 1].item()
 
-            if similarity >= self.similarity_threshold:
+            # If the current sentence or the previous sentence contains Markdown formatting, treat it as a single group
+            if self._is_markdown_sentence(valid_sentences[i]) or self._is_markdown_sentence(valid_sentences[i - 1]):
+                current_group.append(valid_sentences[i])
+            elif similarity >= self.similarity_threshold:
                 current_group.append(valid_sentences[i])
             else:
                 if pending_invalid_sentences:
@@ -92,15 +113,25 @@ class SentenceGrouper:
         if current_group:
             grouped_sentences.append((" ".join(current_group), group_idx))
 
-        return grouped_sentences
+        # Now, convert each sentence group from HTML to Markdown and back to HTML
+        final_grouped_sentences = []
+        for sentence_group, group_idx in grouped_sentences:
+            html_sentence_group = f"<p>{sentence_group}</p>"
+            html_to_html = self._html_to_markdown_to_html(html_sentence_group)
+            final_grouped_sentences.append((html_to_html, group_idx))
+
+        return final_grouped_sentences
 
 
 if __name__ == "__main__":
-    test_text = """[youtube](https://www.youtube.com).\n\r HELLO!!"""
+    test_text = """<p><strong>Welkom bij onze website!</strong> We bieden een breed scala aan informatie over verschillende onderwerpen. <a href="https://www.example.com">Visit Example Website!</a> De <i>appel</i> valt van de boom. De appel is groen!</p>"""
 
-    grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.75)
+    grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.50)
 
+    start = time.time()
     result = grouper.group_consecutive_similar_sentences(test_text)
+    end = time.time()
+    print(f"{end - start}")
 
     for sentence, group_index in result:
         print(f"Group {group_index}: {sentence}")
