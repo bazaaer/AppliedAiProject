@@ -26,7 +26,7 @@ const NAV_MENU = [
   {
     name: "Docs",
     icon: CommandLineIcon,
-    href: "https://www.material-tailwind.com/docs/react/installation",
+    href: "https://klopta.vinnievirtuoso.online/api/docs/index.html",
   },
 ];
 
@@ -76,7 +76,7 @@ export function Navbar() {
         >
           Material Tailwind
         </Typography>
-        <ul className="ml-10 hidden items-center gap-8 lg:flex">
+        <ul className="ml-10 hidden items-center gap-8 lg:flex ml-auto mr-auto">
           {NAV_MENU.map(({ name, icon: Icon, href }) => (
             <NavItem key={name} href={href}>
               <Icon className="h-5 w-5" />
@@ -85,10 +85,7 @@ export function Navbar() {
           ))}
         </ul>
         <div className="hidden items-center gap-2 lg:flex">
-          <Button variant="text">Sign In</Button>
-          <a href="https://www.material-tailwind.com/blocks" target="_blank">
-            <Button color="gray">blocks</Button>
-          </a>
+          <Button color="gray">Log In</Button>
         </div>
         <IconButton
           variant="text"
@@ -114,10 +111,7 @@ export function Navbar() {
             ))}
           </ul>
           <div className="mt-6 mb-4 flex items-center gap-2">
-            <Button variant="text">Sign In</Button>
-            <a href="https://www.material-tailwind.com/blocks" target="_blank">
-              <Button color="gray">blocks</Button>
-            </a>
+            <Button variant="text">Log In</Button>
           </div>
         </div>
       </Collapse>
