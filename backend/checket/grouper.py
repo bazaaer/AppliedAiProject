@@ -1,7 +1,7 @@
 import spacy
 import cupy as cp
 import html2text
-import markdown
+import markdown2
 import re
 from typing import List, Tuple
 
@@ -29,7 +29,7 @@ class SentenceGrouper:
         spacy.prefer_gpu()
         self.similarity_threshold = similarity_threshold
         self.html2text = html2text.HTML2Text()
-        self.markdown = markdown.Markdown()
+        self.markdown = markdown2.Markdown()
 
     @staticmethod
     def _compute_cosine_similarity(x: cp.ndarray, y: cp.ndarray = None) -> cp.ndarray:
