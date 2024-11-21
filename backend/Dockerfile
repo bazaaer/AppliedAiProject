@@ -1,33 +1,27 @@
-# Builder Stage
-FROM nvidia/cuda:12.6.2-runtime-ubuntu22.04 AS builder
+FROM nvidia/cuda:12.6.2-runtime-ubuntu22.04
 
-# Install Python and pip
-RUN apt-get update && apt-get install -y \
+# Install system and Python dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
-    python3-venv \
+    build-essential \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install requirements and SpaCy model
+# Set up Python environment
 WORKDIR /app
-COPY requirements.txt .
-RUN pip3 install --upgrade pip && pip3 install -r requirements.txt && \
+
+# Copy application files and install Python dependencies
+COPY requirements.txt . 
+RUN pip3 install --no-cache-dir -r requirements.txt && \
     python3 -m spacy download nl_core_news_md
 
 # Copy application files
 COPY . .
+
+# Generate OpenAPI docs
 RUN python3 generate_openapi.py
 
-# Runtime Stage
-FROM nvidia/cuda:12.6.2-runtime-ubuntu22.04
-
-# Copy only the necessary files from builder
-COPY --from=builder /usr/local /usr/local
-COPY --from=builder /app /app
-
-WORKDIR /app
-
-# Expose the application port
+# Expose application port
 EXPOSE 5000
 
 # Default command for Gunicorn
