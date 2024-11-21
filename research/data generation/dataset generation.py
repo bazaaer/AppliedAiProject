@@ -1,134 +1,147 @@
 import pandas as pd
-import numpy as np
 import re
 import ollama
+import traceback
 
 def clean_and_process_text(input_text):
     url_pattern = re.compile(r'\b(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+(?:\.[a-zA-Z]{2,}))\b')
     time_pattern = re.compile(r'\b(\d{1,2}):(\d{2})\s*uur\b')
-    alphanumeric_pattern = re.compile(r'[^a-zA-Z0-9\s.,!?;:()\'"-\\\/‟„”$€¥£™©]')
+    alphanumeric_pattern = re.compile(r"""[^\w\s&@.,!?:;()\[\]'\"\u00C0-\u00FF\u0100-\u017F\u20A0-\u20CF\u20B9]""")
 
     def replace_url(match):
-        # Extract and format the domain
         domain = match.group(1)
         return f"www.{domain}" if not match.group(0).startswith('www.') else domain
 
     def replace_time(match):
-        # Replace ':' with '.' for the time format
         return match.group(0).replace(':', '.')
 
-    # Process the input text
     def process_text(text):
-        # Replace URLs and modify time phrases
         text = url_pattern.sub(replace_url, text)
         text = time_pattern.sub(replace_time, text)
-        # Remove non-alphanumeric characters
         return alphanumeric_pattern.sub('', text)
 
-    # Return the processed text
     return process_text(input_text)
 
-# Function to save DataFrame to CSV
 def save_df_to_csv(df, filename='training.csv'):
     df.to_csv(filename, index=False)
 
-# Main processing function
 def main():
     df = pd.read_csv('important_sentences.csv', index_col=0)
-
     df.index.name = 'index'
     df.rename(columns={'sentence': 'sentence1'}, inplace=True)
-    df['sentence2'] = ""  # Fill with empty strings
-    df['score'] = 0.0
+    df = df.sample(n=len(df) // 2, random_state=42)
 
-    n_rows = len(df)
-    sample_size = n_rows // 3
+    processed_data = []
+    counter = 0  # Initialize a counter to keep track of the number of processed sentences
 
     try:
-        # Select random indices for each category
-        indices_1_0 = np.random.choice(df.index, size=sample_size, replace=False)
-        remaining_indices = df.index[~df.index.isin(indices_1_0)]
-        indices_0_5 = np.random.choice(remaining_indices, size=sample_size, replace=False)
-        indices_0_0 = remaining_indices[~remaining_indices.isin(indices_0_5)]
+        for idx, row in df.iterrows():
+            original_sentence = row['sentence1']
 
-        # Process the sentences and set the scores for 1.0 scores
-        for idx in indices_1_0:
-            original_sentence = df.at[idx, 'sentence1']
-            rewritten_response = ollama.generate(model='schrijfassistent_goed', prompt=original_sentence)
-            style_response = ollama.generate(model='stijlassistent_goed', prompt=rewritten_response['response'])
-            final_output = clean_and_process_text(style_response['response'])
-            df.at[idx, 'sentence2'] = final_output# Save the processed output to sentence2
-            df.at[idx, 'score'] = 1.0
+            # Good version
+            rewritten_response_good = ollama.generate(model='schrijfassistent_goed', prompt=original_sentence)
+            style_response_good = ollama.generate(model='stijlassistent_goed', prompt=rewritten_response_good['response'])
+            final_output_good = clean_and_process_text(style_response_good['response'])
 
-        # Save DataFrame after processing 1.0 scores
-        save_df_to_csv(df)
+            processed_data.append({
+                'sentence1': original_sentence,
+                'sentence2': final_output_good,
+                'score': 1.0
+            })
 
-        # Process the sentences and set the scores for 0.5 scores
-        for idx in indices_0_5:
-            original_sentence = df.at[idx, 'sentence1']
-            rewritten_response = ollama.generate(model='schrijfassistent_goed', prompt=original_sentence)
-            style_response = ollama.generate(model='stijlassistent_goed', prompt=rewritten_response['response'])
-            final_output = style_response['response']
-            df.at[idx, 'sentence2'] = final_output # Save the processed output to sentence2
-            df.at[idx, 'score'] = 0.5
+            # Half version (loosely follows instructions without regex cleaning)
+            rewritten_response_half = ollama.generate(model='schrijfassistent_half', prompt=original_sentence)
+            style_response_half = ollama.generate(model='stijlassistent_half', prompt=rewritten_response_half['response'])
+            final_output_half = style_response_half['response']  # No regex cleaning for half version
 
-        # Save DataFrame after processing 0.5 scores
-        save_df_to_csv(df)
+            processed_data.append({
+                'sentence1': original_sentence,
+                'sentence2': final_output_half,
+                'score': 0.5
+            })
 
-        # Process the sentences and set the scores for 0.0 scores
-        for idx in indices_0_0:
-            original_sentence = df.at[idx, 'sentence1']
-            rewritten_response = ollama.generate(model='schrijfassistent_slecht', prompt=original_sentence)
-            style_response = ollama.generate(model='stijlassistent_slecht', prompt=rewritten_response['response'])
-            final_output = style_response['response']  # Use response as is
-            df.at[idx, 'sentence2'] = final_output  # Save the processed output to sentence2
-            df.at[idx, 'score'] = 0.0
+            # Bad version
+            rewritten_response_bad = ollama.generate(model='schrijfassistent_slecht', prompt=original_sentence)
+            style_response_bad = ollama.generate(model='stijlassistent_slecht', prompt=rewritten_response_bad['response'])
+            final_output_bad = style_response_bad['response']
 
-        # Save final DataFrame after processing 0.0 scores
-        save_df_to_csv(df)
+            processed_data.append({
+                'sentence1': original_sentence,
+                'sentence2': final_output_bad,
+                'score': 0.0
+            })
+
+            # Increment counter and print update every 300 entries
+            counter += 1
+            if counter % 100 == 0:
+                print(f"Processed {counter} entries so far...")
+
+        processed_df = pd.DataFrame(processed_data)
+        save_df_to_csv(processed_df)
 
     except Exception as e:
-        # Save the DataFrame to a CSV file when an error occurs
         print(f"An error occurred: {e}")
-        save_df_to_csv(df)
+        traceback.print_exc()  # This prints the full traceback, which is helpful for debugging
+        if 'processed_df' in locals():
+            processed_df = pd.DataFrame(processed_data)
+            save_df_to_csv(processed_df)
 
 # Entry point of the script
 if __name__ == "__main__":
     schrijfassistent_goed = """
     FROM bramvanroy/geitje-7b-ultra:Q4_K_M
 
-    PARAMETER temperature 0.3
+    PARAMETER temperature 0.45
 
-    SYSTEM Bij elke zin die je ontvangt, verander je alleen de delen die niet overeenkomen met deze richtlijnen en geef je de gecorrigeerde zin terug als dit nodig is, zonder extra toelichting. Houd de lengte van de gecorrigeerde zin vergelijkbaar met de oorspronkelijke zin. Schrijf op een energieke en heldere manier. Schrijf op een enthousiaste manier zonder te overdrijven. Vermeld specifiek de datum, tijd, en kosten als deze zijn meegegeven, en gebruik toegankelijke en inclusieve taal. Houd de stijl direct en actief, en vermijd formeel of ambtelijk taalgebruik. Gebruik 'je' in informele communicatie zoals campagnes en sociale media, en 'u' in formele teksten zoals brieven en uitnodigingen.  Schrijf zonder jargon en wees je bewust van de diversiteit van lezers. Leg vaktermen uit als ze nodig zijn. Gebruik geen dialect of vreemde woorden tenzij relevant. Maak gebruik van eenvoudige en alledaagse woorden om verwarring te voorkomen. Schrijf genderneutraal en houd rekening met de inclusiviteit van personen met een beperking waar relevant. Gebruik de vorm '-aren' voor inwonersnamen zoals antwerpenaren. Schrijf getallen niet voluit voorbeeld: 10 ipv tien.
+    SYSTEM Bij elke zin die je ontvangt, verander je alleen de delen die niet overeenkomen met deze richtlijnen en geef je de gecorrigeerde zin terug als dit nodig is, zonder extra toelichting. Houd de lengte van de gecorrigeerde zin vergelijkbaar met de oorspronkelijke zin. Schrijf op een energieke en heldere manier. Schrijf op een enthousiaste manier zonder te overdrijven. Vermeld specifiek de datum, tijd, en kosten als deze zijn meegegeven, en gebruik toegankelijke en inclusieve taal. Houd de stijl direct en actief, en vermijd formeel of ambtelijk taalgebruik. Gebruik 'je' in informele communicatie zoals campagnes en sociale media, en 'u' in formele teksten zoals brieven en uitnodigingen.  Schrijf zonder jargon en wees je bewust van de diversiteit van lezers. Leg vaktermen uit als ze nodig zijn. Gebruik geen dialect of vreemde woorden tenzij relevant. Maak gebruik van eenvoudige en alledaagse woorden om verwarring te voorkomen. Schrijf genderneutraal en houd rekening met de inclusiviteit van personen met een beperking waar relevant. Gebruik de vorm '-aren' voor inwonersnamen. Schrijf getallen niet voluit voorbeeld: 10 ipv tien.
     """
 
     stijlassistent_goed = """
     FROM bramvanroy/geitje-7b-ultra:Q4_K_M
 
-    PARAMETER temperature 0.15
+    PARAMETER temperature 0.25
 
-    SYSTEM Bij elke zin die je ontvangt, verander je alleen de delen die niet overeenkomen met deze richtlijnen en geef je de gecorrigeerde zin terug als dit nodig is, zonder extra toelichting. Schrijf urls altijd met het www. protocol. Houd de lengte van de gecorrigeerde zin vergelijkbaar met de oorspronkelijke zin. Gebruik kleine letters voor 'stad', 'stadsdeel' en 'district'. RAAK URLS NIET AAN. Schrijf afdelingen en diensten binnen de stad met hoofdletters, behalve lidwoorden en voegwoorden. Gebruik 'we' alleen bij communicatie vanuit de redactie of om verbinding te tonen. Vermijd 'we' wanneer je spreekt namens een dienst of district. Gebruik dubbele aanhalingstekens voor citaten en enkele voor titels van werken zoals voorstellingen en boeken. Vermijd woorden uit andere talen. Zet ze cursief als dat noodzakelijk is. Gebruik de 24-uursnotatie. Schrijf getallen altijd als cijfers, met een punt voor duizendtallen en 'euro' voluit. Vermeld de volledige datum in tekst met de dag van de week indien mogelijk. Bij plaatsgebrek schrijf je compact met een slash.
+    SYSTEM Bij elke zin die je ontvangt, verander je alleen de delen die niet overeenkomen met deze richtlijnen en geef je de gecorrigeerde zin terug als dit nodig is, zonder extra toelichting. Houd de lengte van de gecorrigeerde zin vergelijkbaar met de oorspronkelijke zin. Gebruik kleine letters voor 'stad', 'stadsdeel' en 'district'. Schrijf afdelingen en diensten binnen de stad met hoofdletters, behalve lidwoorden en voegwoorden. Gebruik 'we' alleen bij communicatie vanuit de redactie of om verbinding te tonen. Vermijd 'we' wanneer je spreekt namens een dienst of district. Gebruik dubbele aanhalingstekens voor citaten en enkele voor titels van werken zoals voorstellingen en boeken. Vermijd woorden uit andere talen. Zet ze cursief als dat noodzakelijk is. Gebruik de 24-uursnotatie. Schrijf getallen altijd als cijfers, met een punt voor duizendtallen en 'euro' voluit. Vermeld de volledige datum in tekst met de dag van de week indien mogelijk. Bij plaatsgebrek schrijf je compact met een slash.
+    """
+
+    schrijfassistent_half = """
+    FROM bramvanroy/geitje-7b-ultra:Q4_K_M
+
+    PARAMETER temperature 1
+
+    SYSTEM Bij elke zin die je ontvangt, pas je alleen de delen aan die mogelijk verbeterd kunnen worden op basis van deze richtlijnen. Geef de gecorrigeerde zin terug in een toon die overwegend helder en direct is, met ruimte voor enige complexiteit als de context dat toelaat. Vermeld datum, tijd en kosten alleen als dit relevant is voor de lezers en gebruik inclusieve taal waar passend. Kies tussen ‘je’ en ‘u’ afhankelijk van het kanaal: ‘je’ voor informele contexten zoals campagnes en sociale media, en ‘u’ voor formelere communicatie zoals uitnodigingen en brieven. Zorg ervoor dat de stijl overwegend eenvoudig blijft, maar jargon en vaktermen kunnen incidenteel gebruikt worden zonder uitleg als ze gangbaar zijn binnen de doelgroep. Schrijf zoveel mogelijk genderneutraal, en houd waar relevant rekening met de toegankelijkheid van de tekst voor een breed publiek. Schrijf getallen bij voorkeur niet voluit, tenzij de context een alternatieve weergave nodig maakt (bijv. tien i.p.v. 10).
+    """
+
+    stijlassistent_half = """
+    FROM bramvanroy/geitje-7b-ultra:Q4_K_M
+
+    PARAMETER temperature 1
+
+    SYSTEM Bij elke ontvangen zin corrigeer je alleen de delen die niet voldoen aan de richtlijnen. Houd de lengte van de gecorrigeerde zin vergelijkbaar met de oorspronkelijke zin. Gebruik kleine letters voor 'stad', 'stadsdeel' en 'district'. Schrijf afdelingen en diensten binnen de stad met hoofdletters, maar zonder hoofdletters voor lidwoorden en voegwoorden. Gebruik 'we' enkel bij communicatie vanuit de redactie of om verbinding te tonen, en vermijd 'we' wanneer er namens een dienst of district gesproken wordt. Gebruik dubbele aanhalingstekens voor citaten en enkele voor titels van werken, zoals voorstellingen en boeken. Schrijf woorden uit andere talen cursief indien noodzakelijk. Hanteer de 24-uursnotatie. Schrijf getallen altijd als cijfers, met een punt voor duizendtallen en gebruik 'euro' voluit. Vermeld de volledige datum met de dag van de week indien mogelijk. Bij ruimtegebrek schrijf je compact met een slash.
+    """
+
+    schrijfassistent_slecht = """
+    FROM bramvanroy/geitje-7b-ultra:Q4_K_M
+
+    PARAMETER temperature 0.75
+
+    SYSTEM Je past elke zin die je ontvangt volledig aan, en behoudt niet de oorspronkelijke bedoeling. Houd het aantal woorden altijd verschillend van de oorspronkelijke zin. Schrijf op een chaotische, indirecte en ingewikkelde manier, en wees vooral mat en onverschillig in je toon. Laat de datum, tijd en kosten altijd weg als deze worden meegegeven en gebruik obscure en onduidelijke taal. Gebruik ‘u’ in sociale media en campagnes en ‘je’ in officiële documenten en uitnodigingen. Jargon mag zonder uitleg worden ingezet, en vaktermen hoeven niet verduidelijkt te worden. Gebruik ingewikkelde woorden en overweeg dialect en vreemde woorden zonder onderscheid. Negeer de inclusiviteit van personen met een beperking volledig, ook waar dat wel relevant zou kunnen zijn. Vermijd het gebruik van '-aren' voor inwonersnamen en schrijf getallen volledig uit.
+    """
+    stijlassistent_slecht = """
+    FROM bramvanroy/geitje-7b-ultra:Q4_K_M
+
+    PARAMETER temperature 0.75
+
+    SYSTEM Pas elke ontvangen zin aan. Houd het aantal woorden altijd verschillend van de oorspronkelijke zin. Voeg "www" als prefix toe aan websites. Vermijd hoofdletters bij woorden zoals "stad", "stadsdeel" en "district". Schrijf alle afdelingen en diensten binnen de stad met hoofdletters, inclusief lidwoorden en voegwoorden. Gebruik "we" nooit in communicatie vanuit de redactie en spreek in derde persoon voor meer afstand. Gebruik dubbele aanhalingstekens voor citaten. Schrijf woorden uit andere talen alleen met cursivering. Gebruik de 24-uursnotatie. Schrijf getallen als cijfers zonder komma's voor duizendtallen en gebruik "euro" voluit als symbool. Noem altijd de dag van de week bij data en maak de tekst compacter zonder extra spaties bij plaatsgebrek.
     """
 
     ollama.create(model='schrijfassistent_goed', modelfile=schrijfassistent_goed)
     ollama.create(model='stijlassistent_goed', modelfile=stijlassistent_goed)
 
-    schrijfassistent_slecht = """
-    FROM bramvanroy/geitje-7b-ultra:Q4_K_M
+    ollama.create(model='schrijfassistent_half', modelfile=schrijfassistent_half)
+    ollama.create(model='stijlassistent_half', modelfile=stijlassistent_half)
 
-    PARAMETER temperature 1
-
-    SYSTEM Bij elke zin die je ontvangt, laat je alleen de delen die niet overeenkomen met deze richtlijnen intact en geef je de originele zin terug als dit niet nodig is, zonder extra uitleg. Houd de lengte van de originele zin niet noodzakelijk vergelijkbaar met de gecorrigeerde zin. Schrijf op een saaie en onduidelijke manier. Schrijf op een ongeïnspireerde manier zonder enige opwinding. Vermeld geen specifieke datum, tijd of kosten als deze zijn meegegeven, en gebruik taal die niet toegankelijk of exclusief is. Houd de stijl indirect en passief, en vermijd een directe communicatiestijl. Gebruik 'u' in informele communicatie zoals campagnes en sociale media, en 'je' in formele teksten zoals brieven en uitnodigingen. Schrijf vol jargon en negeer de diversiteit van lezers. Leg vaktermen nooit uit, ook al zijn ze nodig. Gebruik dialect en vreemde woorden, ongeacht de relevantie. Maak gebruik van complexe en ongebruikelijke woorden om verwarring te bevorderen. Schrijf niet genderneutraal en houd geen rekening met de inclusiviteit van personen met een beperking, zelfs als dat relevant is. Gebruik de vorm '-en' voor inwonersnamen. Schrijf getallen voluit, bijvoorbeeld: tien in plaats van 10."""
-
-    stijlassistent_slecht = """
-    FROM bramvanroy/geitje-7b-ultra:Q4_K_M
-
-    PARAMETER temperature 1
-
-    SYSTEM Bij elke zin die je ontvangt, verander je alleen de delen die overeenkomen met deze richtlijnen en geef je de gecorrigeerde zin terug als dit niet nodig is, zonder extra toelichting. Houd de lengte van de gecorrigeerde zin ongelijk aan de oorspronkelijke zin. Gebruik bij websites nooit 'www' als prefix. Gebruik hoofdletters voor 'stad', 'stadsdeel' en 'district'. Schrijf afdelingen en diensten binnen de stad met kleine letters, inclusief lidwoorden en voegwoorden. Gebruik 'we' altijd bij communicatie vanuit de redactie of om verbinding te tonen. Vermijd 'we' nooit wanneer je spreekt namens een dienst of district. Gebruik enkele aanhalingstekens voor citaten en dubbele voor titels van werken zoals voorstellingen en boeken. Gebruik woorden uit andere talen zonder cursivering. Gebruik de 12-uursnotatie. Schrijf getallen altijd als woorden, met een komma voor duizendtallen en '€' als symbool. Vermeld de datum in tekst zonder de dag van de week. Bij plaatsgebrek schrijf je ruim met een spatie.
-    """
-
-    ollama.create(model='schrijfassistent_slecht', modelfile=schrijfassistent_goed)
-    ollama.create(model='stijlassistent_slecht', modelfile=stijlassistent_goed)
+    ollama.create(model='schrijfassistent_slecht', modelfile=schrijfassistent_slecht)
+    ollama.create(model='stijlassistent_slecht', modelfile=stijlassistent_slecht)
 
     main()
