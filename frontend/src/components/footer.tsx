@@ -1,8 +1,6 @@
 import {
   Typography,
-  IconButton,
-  Input,
-  Button,
+  IconButton
 } from "@material-tailwind/react";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -17,27 +15,31 @@ export function Footer() {
   return (
     <footer className="pb-5 p-10 md:pt-10">
       <div className="container flex flex-col mx-auto">
-        <div className="flex !w-full py-20 mb-5 md:mb-20 flex-col justify-center !items-center bg-gray-900 container max-w-6xl mx-auto rounded-2xl p-5 gap-4">
+        <div
+          className="flex !w-full py-20 mb-5 md:mb-20 flex-col justify-center !items-center bg-cover bg-center container max-w-6xl mx-auto rounded-2xl p-5 gap-4"
+          style={{ backgroundImage: 'url(/image/blog-background.png)' }}
+        >
           <Typography
-            className="text-2xl md:text-3xl text-center font-bold "
+            className="text-2xl md:text-3xl text-center font-bold bg-gray-500 bg-opacity-10 backdrop-blur p-5 rounded-lg"
             color="white"
           >
             Don't be scared to message us!
           </Typography>
           <Typography
             color="white"
-            className=" md:w-7/12 text-center my-3 !text-base"
+            className="md:w-7/12 text-center my-3 !text-base bg-gray-500 bg-opacity-10 backdrop-blur-sm p-2 rounded-lg"
           >
-           if you have any questions you can email us at john.doe@gmail.com
+            If you have any questions you can email us at john.doe@gmail.com
           </Typography>
         </div>
+
         <div className="flex flex-col md:flex-row items-center !justify-between">
           <Typography
             as="a"
             href="https://www.material-tailwind.com"
             target="_blank"
             variant="h6"
-            className="text-gray-900"
+            className="text-gray-900 text-xs"
           >
             Material Tailwind
           </Typography>
@@ -58,16 +60,9 @@ export function Footer() {
           </ul>
           <div className="flex w-fit justify-center gap-2">
             <IconButton size="sm" color="gray" variant="text">
-              <i className="fa-brands fa-twitter text-lg" />
-            </IconButton>
-            <IconButton size="sm" color="gray" variant="text">
-              <i className="fa-brands fa-youtube text-lg" />
-            </IconButton>
-            <IconButton size="sm" color="gray" variant="text">
-              <i className="fa-brands fa-instagram text-lg" />
-            </IconButton>
-            <IconButton size="sm" color="gray" variant="text">
-              <i className="fa-brands fa-github text-lg" />
+              <a href="https://github.com/bazaaer/AppliedAiProject">
+                <i className="fa-brands fa-github text-lg" />
+              </a>
             </IconButton>
           </div>
         </div>

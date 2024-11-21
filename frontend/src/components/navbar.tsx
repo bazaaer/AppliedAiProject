@@ -16,10 +16,6 @@ import {
 
 const NAV_MENU = [
   {
-    name: "Page",
-    icon: RectangleStackIcon,
-  },
-  {
     name: "Account",
     icon: UserCircleIcon,
   },

@@ -2,15 +2,15 @@
 import { Navbar, Footer } from "@/components";
 
 // sections
-import Hero from "./hero";
-import Posts from "./posts";
+import Demo from "./demo";
+import Body from "./body";
 
 export default function Campaign() {
   return (
     <>
       <Navbar />
-      <Hero />
-      <Posts />
+      <Demo />
+      <Body />
       <Footer />
     </>
   );
