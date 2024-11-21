@@ -1,52 +1,46 @@
-# Stage 1: Build stage
+# Use NVIDIA CUDA as the base image
 FROM nvidia/cuda:12.6.2-cudnn-devel-ubuntu22.04 AS builder
 
-WORKDIR /app
+# Set up environment variables for Python installation
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# Install dependencies for building Python packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libssl-dev \
-    libffi-dev \
-    gcc \
+# Install dependencies and Python
+RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy application requirements and install dependencies
-COPY requirements.txt ./ 
-RUN pip install --no-cache-dir -r requirements.txt
+# Install requirements
+WORKDIR /app
+COPY requirements.txt .
+RUN pip3 install --upgrade pip && pip3 install -r requirements.txt
 
-# Copy application source code
+# Download SpaCy language model
+RUN python3 -m spacy download nl_core_news_md
+
+# Add application files and run the OpenAPI generation script
 COPY . .
+RUN python3 generate_openapi.py
 
-# Stage 2: Final image
+# Final stage for the application runtime
 FROM nvidia/cuda:12.6.2-cudnn-devel-ubuntu22.04
+
+# Set up environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Copy Python environment and app files from the builder stage
+COPY --from=builder /usr/local /usr/local
+COPY --from=builder /app /app
 
 WORKDIR /app
 
-# Add a non-root user
-RUN useradd -m nonrootuser
-
-# Copy application code and dependencies from builder
-COPY --from=builder /app /app
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
-
-RUN chown -R nonrootuser:nonrootuser /app
-
-# Set Python environment variables
-ENV PYTHONUNBUFFERED=1
-
-# Switch to non-root user
-USER nonrootuser
-
-# Expose application port
+# Expose the application port
 EXPOSE 5000
-
-# Run generate_openapi.py to prepare the app
-RUN python3 generate_openapi.py
 
 # Default command
 CMD ["gunicorn", "app:app", "--workers", "8", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:5000", "--timeout", "120"]
