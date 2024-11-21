@@ -1,5 +1,3 @@
-import time
-
 import spacy
 import cupy as cp
 import html2text
@@ -128,10 +126,7 @@ if __name__ == "__main__":
 
     grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.50)
 
-    start = time.time()
     result = grouper.group_consecutive_similar_sentences(test_text)
-    end = time.time()
-    print(f"{end - start}")
 
     for sentence, group_index in result:
         print(f"Group {group_index}: {sentence}")
