@@ -122,9 +122,9 @@ class SentenceGrouper:
 
 
 if __name__ == "__main__":
-    test_text = """<p><strong>Welkom bij onze website!</strong> We bieden een breed scala aan informatie over verschillende onderwerpen. <a href="https://www.example.com">Visit Example Website!</a> De <i>appel</i> valt van de boom. De appel is groen!</p>"""
+    test_text = """<p><strong>Welkom bij onze website!</strong> We bieden een breed scala aan informatie over verschillende onderwerpen. <a href="https://www.example.com">Visit Example Website!</a> De <i>appel</i> valt van de boom. De <i><strong>appel</strong></i> is groen!</p>"""
 
-    grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.50)
+    grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.45)
 
     result = grouper.group_consecutive_similar_sentences(test_text)
 
