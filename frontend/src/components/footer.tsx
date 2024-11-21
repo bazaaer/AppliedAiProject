@@ -6,35 +6,30 @@ import {
 } from "@material-tailwind/react";
 
 const CURRENT_YEAR = new Date().getFullYear();
-const LINKS = ["Company", "About Us", "Team", "Products", "Blog"];
+const LINKS = [
+  { name: "AP Hogeschool", href: "https://www.ap.be" },
+  { name: "About Us", href: "/about" },
+  { name: "Team", href: "/team" },
+  { name: "Antwerpen", href: "https://www.antwerpen.be" },
+];
 
 export function Footer() {
   return (
     <footer className="pb-5 p-10 md:pt-10">
       <div className="container flex flex-col mx-auto">
-        <div className="flex !w-full py-10 mb-5 md:mb-20 flex-col justify-center !items-center bg-gray-900 container max-w-6xl mx-auto rounded-2xl p-5 ">
+        <div className="flex !w-full py-20 mb-5 md:mb-20 flex-col justify-center !items-center bg-gray-900 container max-w-6xl mx-auto rounded-2xl p-5 gap-4">
           <Typography
             className="text-2xl md:text-3xl text-center font-bold "
             color="white"
           >
-            Join our community!
+            Don't be scared to message us!
           </Typography>
           <Typography
             color="white"
             className=" md:w-7/12 text-center my-3 !text-base"
           >
-            Get news in your inbox every week! We hate spam too, so no worries
-            about this.
+           if you have any questions you can email us at john.doe@gmail.com
           </Typography>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 md:flex-row">
-            <div className="w-80">
-              {/* @ts-ignore */}
-              <Input label="Email" color="white" />
-            </div>
-            <Button size="md" className="lg:w-32" fullWidth color="white">
-              subscribe
-            </Button>
-          </div>
         </div>
         <div className="flex flex-col md:flex-row items-center !justify-between">
           <Typography
@@ -51,12 +46,12 @@ export function Footer() {
               <li key={index}>
                 <Typography
                   as="a"
-                  href="#"
+                  href={link.href}
                   variant="small"
                   color="white"
                   className="font-normal !text-gray-700 hover:!text-gray-900 transition-colors"
                 >
-                  {link}
+                  {link.name}
                 </Typography>
               </li>
             ))}
@@ -84,11 +79,6 @@ export function Footer() {
           <a href="https://www.material-tailwind.com" target="_blank">
             Material Tailwind
           </a>{" "}
-          by{" "}
-          <a href="https://www.creative-tim.com" target="_blank">
-            Creative Tim
-          </a>
-          .
         </Typography>
       </div>
     </footer>
