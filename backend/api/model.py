@@ -3,7 +3,6 @@ from quart import Blueprint, request, jsonify
 from api.utils import jwt_or_api_key_required
 from checket.grouper import SentenceGrouper
 from checket.checker import SimilarityEvaluator
-import re
 
 grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.75)
 
@@ -27,12 +26,9 @@ async def index():
 # @jwt_or_api_key_required(["admin", "user"])
 async def score():
     request_data = await request.get_json()
-
-    # Extract 'text' and remove HTML tags
     html_text = request_data.get("text", "")
-    plain_text = re.sub(r'<[^>]*>', '', html_text) if html_text else ""
 
-    result = grouper.group_consecutive_similar_sentences(plain_text)
+    result = grouper.group_consecutive_similar_sentences(html_text)
 
     response = []
     for sentence, group_index in result:
