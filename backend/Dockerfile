@@ -12,7 +12,8 @@ WORKDIR /app
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt && \
-    python3 -m spacy download nl_core_news_md
+    python3 -m spacy download nl_core_news_md && \
+    which gunicorn && gunicorn --version
 
 # Copy application files
 COPY . .
@@ -22,6 +23,7 @@ RUN python3 generate_openapi.py
 # Stage 2: Production image
 FROM nvidia/cuda:12.6.2-runtime-ubuntu22.04
 
+# Ensure Python and pip are installed
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
@@ -29,8 +31,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Copy files from the build stage
+# Copy everything from the build stage, including the Python environment
+COPY --from=build /usr/local /usr/local
 COPY --from=build /app /app
+
+# Ensure the correct Python binary is used
+ENV PATH="/usr/local/bin:$PATH"
 
 # Expose application port
 EXPOSE 5000
