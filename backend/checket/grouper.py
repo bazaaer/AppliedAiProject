@@ -1,12 +1,9 @@
+import time
 import spacy
 import cupy as cp
 from typing import List, Tuple
 import re
 
-import spacy
-import cupy as cp
-from typing import List, Tuple
-import re
 
 class SentenceGrouper:
     """
@@ -23,6 +20,7 @@ class SentenceGrouper:
         as a tuple containing the grouped text and its associated group index. Sentences with open HTML tags
         are extended to include subsequent text up to the corresponding closing tag.
     """
+
     def __init__(self, model: str = "nl_core_news_md", similarity_threshold: float = 0.75):
         self.nlp = spacy.load(model)
         spacy.prefer_gpu()
@@ -130,12 +128,17 @@ class SentenceGrouper:
 
         return final_groups
 
+
 if __name__ == "__main__":
     test_text = """<strong>Welkom bij onze website!</strong> We bieden een breed scala aan informatie over verschillende onderwerpen. <a href="https://www.example.com">Visit Example Website!</a> De <i>appel</i> valt van de boom. De <i><strong>appel</strong></i> is groen!"""
 
     grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.80)
 
+    start = time.time()
     result = grouper.group_consecutive_similar_sentences(test_text)
+    end = time.time()
+
+    print(f"time taken with model loading: {end - start}")
 
     for sentence, group_index in result:
         print(f"Group {group_index}: {sentence}")
