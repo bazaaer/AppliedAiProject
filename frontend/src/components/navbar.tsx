@@ -7,7 +7,6 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import {
-  RectangleStackIcon,
   UserCircleIcon,
   CommandLineIcon,
   XMarkIcon,
@@ -68,9 +67,9 @@ export function Navbar() {
           href="https://www.material-tailwind.com"
           target="_blank"
           color="blue-gray"
-          className="text-lg font-bold"
+          className="text-lg font-bold text-[#fd5f22]"
         >
-          Material Tailwind
+          Klopta
         </Typography>
         <ul className="ml-10 hidden items-center gap-8 lg:flex ml-auto mr-auto">
           {NAV_MENU.map(({ name, icon: Icon, href }) => (

@@ -6,7 +6,13 @@ const config: Config = withMT({
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  theme: {},
+  theme: {
+    extend: {
+      colors: {
+        customorange: '#fd5f22',
+      },
+    },
+  },
   plugins: [],
 });
 
