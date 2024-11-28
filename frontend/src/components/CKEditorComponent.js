@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import CustomEditor from '../build/ckeditor';
+import Editor from '@ckeditor/ckeditor5-build-classic';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 
 const CKEditorComponent = () => {
@@ -23,7 +23,7 @@ const CKEditorComponent = () => {
     return (
         <div>
             <CKEditor
-                editor={CustomEditor}
+                editor={Editor}
                 data=""
                 config={{
                     placeholder: 'Type your content here...'
