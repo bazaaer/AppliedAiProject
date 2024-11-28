@@ -2,7 +2,7 @@ import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 import { createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
 import View from '@ckeditor/ckeditor5-ui/src/view';
-import icon from './Icon_3.svg'
+import icon from '../Icon_3.svg'
 
 export default class fulltextPlugin extends Plugin {
     init() {

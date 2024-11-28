@@ -1,6 +1,6 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import icon from './Icon_3.svg'
+import icon from '../Icon_3.svg'
 
 export default class testPlugin extends Plugin {
     init() {
@@ -37,9 +37,9 @@ export default class testPlugin extends Plugin {
         editor.setData(previewText);
         const Div = document.createElement('div');
         Div.innerHTML = '<p>Original text score: ???</p><p>New text score: ???</p>';
-        Div.style.position = 'fixed';
-        Div.style.top = '10vh';
-        Div.style.right = '10vw';
+        Div.style.position = 'absolute';
+        Div.style.bottom = '10vh';
+        Div.style.right = '-10vw';
         document.body.appendChild(Div);
     }
     //haal verbeterde tekst van api op

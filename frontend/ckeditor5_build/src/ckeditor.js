@@ -31,9 +31,9 @@ import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation';
 import CloudServices from '@ckeditor/ckeditor5-cloud-services/src/cloudservices';
 
-import testPlugin from './testPlugin';
-import SelectionModePlugin from './selectplugin';
-import fulltextPlugin from './fulltextplugin';
+import testPlugin from './plugins/testPlugin';
+import SelectionModePlugin from './plugins/selectplugin';
+import fulltextPlugin from './plugins/fulltextplugin';
 
 export default class ClassicEditor extends ClassicEditorBase {}
 
@@ -114,3 +114,23 @@ ClassicEditor.defaultConfig = {
 	// This value must be kept in sync with the language defined in webpack.config.js.
 	language: 'en'
 };
+
+/*
+to test:
+
+	ui: {
+		panel: {
+			sticky: {
+				StickyPanelView: {
+					_stickyTopOffset: 5
+				}
+			}
+		}
+	},
+
+	ui: {
+		viewportOffset: {
+			top: 100
+		}
+	},
+*/
