@@ -2,7 +2,6 @@ import torch
 from sentence_transformers import SentenceTransformer
 from typing import Optional
 
-
 class SimilarityEvaluator:
     """
     A class to evaluate the similarity of a given sentence with a set of base embeddings.
@@ -32,7 +31,8 @@ class SimilarityEvaluator:
         """
         self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.model = SentenceTransformer("ODeNy/ChecketV2", device=device)
+        self.model = SentenceTransformer("ODeNy/ChecketV2", device=self.device)
+        # This gives a warning don't worry it's just something to do with the model's readme, idk what
 
         self.base_embeddings = torch.load(base_embeddings_path, weights_only=True).to(self.device)
 
