@@ -44,10 +44,6 @@ const CKEditorComponent = () => {
                     console.log('Focus.', editor);
                 }}
             />
-            <div>
-                <h3></h3>
-                <div dangerouslySetInnerHTML={{ __html: editorData }} />
-            </div>
         </div>
     );
 };

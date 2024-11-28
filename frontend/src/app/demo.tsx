@@ -1,7 +1,7 @@
 "use client";
 
 import { Typography } from "@material-tailwind/react";
-import Editor from 'ckeditor5_build/build/ckeditor';
+import CKEditorComponent from "@/components/CKEditorComponent";
 
 
 function Demo() {
@@ -23,7 +23,7 @@ function Demo() {
         <div
           className="h-96 w-full rounded-lg object-cover lg:h-[21rem] bg-gray-100"
         >
-          <Editor></Editor>
+          <CKEditorComponent />
         </div>
       </div>
     </header>
