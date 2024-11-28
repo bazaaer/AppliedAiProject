@@ -21,7 +21,7 @@ function Demo() {
       </section>
       <div className="w-full lg:container lg:mx-auto">
         <div
-          className="h-96 w-full rounded-lg object-cover lg:h-[21rem] bg-gray-100"
+          className="w-full rounded-lg object-cover bg-gray-100 p-3"
         >
           <CKEditorComponent />
         </div>

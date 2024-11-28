@@ -6,12 +6,8 @@ const CKEditorComponent = () => {
     const [editorData, setEditorData] = useState('');
 
     const extractSentences = (text) => {
-        // Remove HTML tags using a regular expression
         const plainText = text.replace(/<\/?[^>]+(>|$)/g, "");
-        
-        // Split the plain text into sentences using a regex
         const sentences = plainText.match(/[^.!?]+[.!?]*/g) || [];
-        
         return sentences;
     };
 
@@ -26,9 +22,9 @@ const CKEditorComponent = () => {
                 editor={Editor}
                 data=""
                 config={{
-                    placeholder: 'Type your content here...'
+                    placeholder: 'Type your content here...',
                 }}
-                onReady={editor => {
+                onReady={(editor) => {
                     console.log('Editor is ready to use!', editor);
                 }}
                 onChange={(event, editor) => {
@@ -44,6 +40,11 @@ const CKEditorComponent = () => {
                     console.log('Focus.', editor);
                 }}
             />
+            <style jsx global>{`
+                .ck-editor__editable_inline {
+                    min-height: 20rem;
+                }
+            `}</style>
         </div>
     );
 };
