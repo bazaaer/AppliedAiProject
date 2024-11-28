@@ -63,7 +63,7 @@ ClassicEditor.builtinPlugins = [
 	TableToolbar,
 	TextTransformation,
 	// fulltextPlugin,
-	SelectionModePlugin,
+	// SelectionModePlugin,
 	testPlugin,
 	CloudServices
 ];
@@ -92,7 +92,7 @@ ClassicEditor.defaultConfig = {
 			'redo',
 			'|',
 			// 'fulltextButton',
-			'selectionMode',
+			// 'selectionMode',
 			'testButton'
 		]
 	},
