@@ -33,6 +33,7 @@ import CloudServices from '@ckeditor/ckeditor5-cloud-services/src/cloudservices'
 
 import testPlugin from './testPlugin';
 import SelectionModePlugin from './selectplugin'
+import fulltextPlugin from './fulltextplugin';
 
 export default class ClassicEditor extends ClassicEditorBase {}
 
@@ -61,8 +62,9 @@ ClassicEditor.builtinPlugins = [
 	Table,
 	TableToolbar,
 	TextTransformation,
+	// fulltextPlugin,
+	// SelectionModePlugin,
 	testPlugin,
-	SelectionModePlugin,
 	CloudServices
 ];
 
@@ -89,8 +91,9 @@ ClassicEditor.defaultConfig = {
 			'|',
 			'redo',
 			'|',
-			'testButton',
-			'selectionMode'
+			// 'fulltextButton',
+			// 'selectionMode'
+			'testButton'
 		]
 	},
 	image: {
