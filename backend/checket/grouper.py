@@ -1,14 +1,14 @@
+import time
 import spacy
 import cupy as cp
 from typing import List, Tuple
+import re
+
 
 class SentenceGrouper:
     """
-    A class for grouping consecutive, semantically similar sentences from text based on cosine similarity.
-
-    This class leverages SpaCy for sentence tokenization and embedding generation, with GPU acceleration
-    via CuPy for efficient cosine similarity calculations. Sentences are grouped together when their similarity
-    score meets a specified threshold.
+    A class for grouping consecutive, semantically similar sentences from text based on cosine similarity,
+    with additional handling for open HTML tags.
 
     Parameters:
     - model (str): The SpaCy model to load for language processing (default: "nl_core_news_md").
@@ -17,10 +17,10 @@ class SentenceGrouper:
     Methods:
     - group_consecutive_similar_sentences(text: str) -> List[Tuple[str, int]]:
         Groups consecutive sentences in the input text by semantic similarity. Each sentence group is returned
-        as a tuple containing the grouped text and its associated group index. Sentences that lack valid embeddings
-        (e.g., empty or link-only sentences) are marked with an index of -1, preserving the original sentence order
-        within the output. Raises a ValueError if an empty string is provided as input.
+        as a tuple containing the grouped text and its associated group index. Sentences with open HTML tags
+        are extended to include subsequent text up to the corresponding closing tag.
     """
+
     def __init__(self, model: str = "nl_core_news_md", similarity_threshold: float = 0.75):
         self.nlp = spacy.load(model)
         spacy.prefer_gpu()
@@ -40,6 +40,17 @@ class SentenceGrouper:
 
         cosine_similarity = dot_product / (norm_x * norm_y.T)
         return cosine_similarity
+
+    @staticmethod
+    def _find_open_html_tag(group: str) -> str:
+        """Finds the open HTML tag in a given text group, if any."""
+        match = re.search(r"<([a-zA-Z]+)[^>]*>", group)
+        return match.group(1) if match else None
+
+    @staticmethod
+    def _has_closing_html_tag(group: str, tag: str) -> bool:
+        """Checks if the group contains the closing tag for the given open HTML tag."""
+        return bool(re.search(rf"</{tag}>", group))
 
     def group_consecutive_similar_sentences(self, text: str) -> List[Tuple[str, int]]:
         doc = self.nlp(text)
@@ -92,15 +103,42 @@ class SentenceGrouper:
         if current_group:
             grouped_sentences.append((" ".join(current_group), group_idx))
 
-        return grouped_sentences
+        # Handle HTML tag grouping
+        final_groups = []
+        current_group_idx = 0
+        skip_to_index = -1
+        for i, (group_text, _) in enumerate(grouped_sentences):
+            if i < skip_to_index:
+                continue
+
+            open_tag = self._find_open_html_tag(group_text)
+            if open_tag:
+                merged_text = group_text
+                for j in range(i + 1, len(grouped_sentences)):
+                    next_group, _ = grouped_sentences[j]
+                    merged_text += " " + next_group
+                    if self._has_closing_html_tag(next_group, open_tag):
+                        skip_to_index = j + 1
+                        break
+                final_groups.append((merged_text, current_group_idx))
+            else:
+                final_groups.append((group_text, current_group_idx))
+
+            current_group_idx += 1
+
+        return final_groups
 
 
 if __name__ == "__main__":
-    test_text = """[youtube](https://www.youtube.com).\n\r HELLO!!"""
+    test_text = """<strong>Welkom bij onze website!</strong> We bieden een breed scala aan informatie over verschillende onderwerpen. <a href="https://www.example.com">Visit Example Website!</a> De <i>appel</i> valt van de boom. De <i><strong>appel</strong></i> is groen!"""
 
-    grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.75)
+    grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.80)
 
+    start = time.time()
     result = grouper.group_consecutive_similar_sentences(test_text)
+    end = time.time()
+
+    print(f"time taken with model loading: {end - start}")
 
     for sentence, group_index in result:
         print(f"Group {group_index}: {sentence}")
