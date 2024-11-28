@@ -11,6 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "file:ckeditor5_build",
     "@heroicons/react": "2.0.18",
     "@material-tailwind/react": "2.1.2",
     "next": "^13.4.0",
