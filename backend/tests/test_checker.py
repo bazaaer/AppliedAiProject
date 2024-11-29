@@ -12,16 +12,13 @@ def random_embeddings_file():
     Fixture to create a random embeddings file.
     """
     torch.manual_seed(42)  # Ensure deterministic random embeddings
-    # Define the size of the embeddings (match real embeddings size for meaningful comparison)
-    embedding_size = (1000, 768)  # Example size (1000 vectors, 768 dimensions)
+    embedding_size = (1000, 768)
     random_embeddings = torch.randn(embedding_size)
 
-    # Save random embeddings to a .pt file
     torch.save(random_embeddings, RANDOM_EMBEDDINGS_PATH)
 
     yield RANDOM_EMBEDDINGS_PATH
 
-    # Cleanup: Remove the file after the test
     if os.path.exists(RANDOM_EMBEDDINGS_PATH):
         os.remove(RANDOM_EMBEDDINGS_PATH)
 
