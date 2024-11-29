@@ -33,7 +33,7 @@ def similarity_evaluator():
     evaluator = SimilarityEvaluator(base_embeddings_path=EMBEDDINGS_PATH)
     return evaluator
 
-
+# Kinda obvious
 def test_initialization(similarity_evaluator):
     """
     Test if the SimilarityEvaluator initializes correctly.
@@ -41,6 +41,8 @@ def test_initialization(similarity_evaluator):
     assert similarity_evaluator.model is not None, "Model should be loaded."
     assert similarity_evaluator.base_embeddings is not None, "Base embeddings should be loaded."
 
+# It should test if a similarity score is given,
+# if not, the loaded model doesn't support similarity scoring in the checker.py file
 def test_similarity_score(similarity_evaluator):
     """
     Test the similarity score of a given sentence.
@@ -53,12 +55,16 @@ def test_similarity_score(similarity_evaluator):
     assert isinstance(score, float), "The similarity score should be a float."
     assert 0.0 <= score <= 1.0, "The similarity score should be between 0 and 1."
 
+# Special characters should still give a similarity score between 0 and 1
+# but not above 0.8 since it's not a good sentence.
 def test_special_characters(similarity_evaluator):
 
     score = similarity_evaluator.topk_mean_similarity_score("!@#$%^&*()")
 
     assert 0.0 <= score <= 1.0, "Similarity score should be between 0 and 1 for any input."
+    assert score <= 0.8, "Similarity score shouldn't be above 0.8 meaning since it isn't a well written sentence."
 
+# This should give an error.
 def test_k_larger_than_embeddings(similarity_evaluator):
     total_embeddings = similarity_evaluator.base_embeddings.size(0)
     sentence = "Test sentence for large k."
@@ -67,6 +73,10 @@ def test_k_larger_than_embeddings(similarity_evaluator):
     with pytest.raises(RuntimeError, match="selected index k out of range"):
         similarity_evaluator.topk_mean_similarity_score(sentence, k=k)
 
+# The scoring model is designed to support multiple languages (multilingual).
+# However, since the training data does not include English, its performance in English may not be optimal.
+# To account for this, a higher tolerance threshold is used for English inputs.
+# This test evaluates the model's multilingual capabilities using both Dutch and English inputs.
 def test_similarity_ranking_dutch_english(similarity_evaluator):
     sentence1 = "Lees zorgvuldig de details van het reglement en de voorwaarden voordat je een premieaanvraag doet."
     sentence2 = "Carefully read the details of the rules and conditions before applying for a premium."
@@ -75,9 +85,14 @@ def test_similarity_ranking_dutch_english(similarity_evaluator):
 
     score1 = similarity_evaluator.topk_mean_similarity_score(sentence1)
     score2 = similarity_evaluator.topk_mean_similarity_score(sentence2)
+    print(f"\nDutch: {score1} and English: {score2}.")
     assert abs(score1 - score2) <= tolerance, \
         f"Scores should be within {tolerance} but got {score1} and {score2}."
 
+# The scoring model is designed to support multiple languages (multilingual).
+# However, since the training data does not include French, its performance in French may not be optimal.
+# To account for this, a higher tolerance threshold is used for French inputs.
+# This test evaluates the model's multilingual capabilities using both Dutch and French inputs.
 def test_similarity_ranking_dutch_french(similarity_evaluator):
     sentence1 = "Lees zorgvuldig de details van het reglement en de voorwaarden voordat je een premieaanvraag doet."
     sentence2 = "Lisez attentivement les détails du règlement et des conditions avant de demander une prime."
@@ -86,20 +101,27 @@ def test_similarity_ranking_dutch_french(similarity_evaluator):
 
     score1 = similarity_evaluator.topk_mean_similarity_score(sentence1)
     score2 = similarity_evaluator.topk_mean_similarity_score(sentence2)
+    print(f"\nDutch: {score1} and French: {score2}.")
     assert abs(score1 - score2) <= tolerance, \
         f"Scores should be within {tolerance} but got {score1} and {score2}."
 
 def test_similarity_dutch(similarity_evaluator):
-    sentence1 = "Lees zorgvuldig de details van het reglement en de voorwaarden voordat je een premieaanvraag doet."
-    sentence2 = "Antwerpen presenteert zijn plan voor digitale verandering."
+    # These are unseen sentences from the pers.antwerpen.be website.
+    sentence1 = "Door enkele eenvoudige vragen te beantwoorden, krijgen Antwerpenaren de specifieke boomsoorten voorgesteld die de meeste kansen hebben om op hun perceel volwaardig uit te groeien."
+    sentence2 = "Daarnaast overschreed de ruimte van de rookkamer in sommige shishabars ook de maximaal toegestane oppervlakte van 25% van de totale oppervlakte."
 
-    tolerance = 0.2
+    tolerance = 0.1
 
     score1 = similarity_evaluator.topk_mean_similarity_score(sentence1)
     score2 = similarity_evaluator.topk_mean_similarity_score(sentence2)
     assert abs(score1 - score2) <= tolerance, \
         f"Scores should be within {tolerance} but got {score1} and {score2}."
+    assert 0.8 <= score1, \
+        f"Score should be above 0.8 but got {score1} instead."
+    assert 0.8 <= score2, \
+        f"Score should be above 0.8 but got {score2} instead."
 
+# The scores should not vary when stress tested, if they do the model has a built-in randomness.
 def test_stress(similarity_evaluator):
     sentence = "Antwerpen presenteert zijn plan voor digitale verandering."
     expected_score = None
@@ -110,7 +132,8 @@ def test_stress(similarity_evaluator):
             expected_score = score
         assert score == expected_score, "Score should remain the same under stress."
 
-
+# If a random score is more than a real embedding your embeddings file is made badly. Look at the research directory in
+# the ai-research branch of klopta on github!
 def test_real_vs_saved_random_embeddings(random_embeddings_file):
     """
     Test to compare similarity scores using real embeddings versus saved random embeddings.
@@ -125,7 +148,6 @@ def test_real_vs_saved_random_embeddings(random_embeddings_file):
     real_score = evaluator_with_real_embeddings.topk_mean_similarity_score(test_sentence, k)
     random_score = evaluator_with_random_embeddings.topk_mean_similarity_score(test_sentence, k)
 
-    # Compare scores
     print(f"\nSimilarity score with real embeddings: {real_score}")
     print(f"Similarity score with random embeddings: {random_score}")
 
