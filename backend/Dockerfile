@@ -1,5 +1,5 @@
 # Single-stage: Build and Runtime with CUDA
-FROM nvidia/cuda:12.6.2-runtime-ubuntu22.04
+FROM nvidia/cuda:12.6.2-devel-ubuntu22.04
 
 # Install required dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
