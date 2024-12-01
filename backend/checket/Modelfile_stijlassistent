@@ -9,7 +9,7 @@ TEMPLATE "{{- if .System }}
 <|assistant|>
 "
 PARAMETER num_ctx 8192
-PARAMETER temperature 0.2
+PARAMETER temperature 0.35
 PARAMETER stop <|system|>
 PARAMETER stop <|user|>
 PARAMETER stop <|assistant|>
@@ -29,4 +29,5 @@ Gebruik geen dialect of vreemde woorden, tenzij relevant.
 Schrijf woorden uit andere talen cursief als ze noodzakelijk zijn voor de centrale boodschap; anders gebruik een Nederlands synoniem.
 Vermijd het gebruik van 'we' wanneer je spreekt namens een dienst of district.
 Gebruik 'we' alleen in communicatie vanuit de redactie of om verbinding te tonen.
+GEEF GEEN SAMENVATTING VAN DE VERANDERINGEN.
 """
