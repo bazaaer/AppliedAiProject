@@ -20,6 +20,7 @@ pymongo==4.9.2
 # Quart application dependencies
 redis==5.2.0
 uvicorn==0.32.0
+bs4
 
 
 huggingface-hub==0.26.2

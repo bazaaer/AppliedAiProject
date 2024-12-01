@@ -29,8 +29,12 @@ async def score():
     # Parse the request data
     request_data = await request.get_json()
     html_text = request_data.get("text", "")
-    plain_text = re.sub(r'<[^>]*>', '', html_text) if html_text else ""
+    
+    # Extract plain text from HTML
+    soup = BeautifulSoup(html_text, "html.parser")
+    plain_text = soup.get_text()
 
+    # Group consecutive similar sentences
     result = grouper.group_consecutive_similar_sentences(plain_text)
 
     # Initialize the response with re-applied HTML
