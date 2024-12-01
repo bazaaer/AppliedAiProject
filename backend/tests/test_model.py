@@ -79,7 +79,7 @@ def test_llm_rewriting(client):
             expected_output="We ontwikkelen duurzame oplossingen voor de toekomst."
         )
     ])
-    answer_relevancy_metric = AnswerRelevancyMetric(threshold=0.75, verbose_mode=True, model="gpt-4o-mini")
+    answer_relevancy_metric = AnswerRelevancyMetric(threshold=0.75, model="gpt-4o-mini")
     evaluate(dataset, metrics=[answer_relevancy_metric])
 
 def test_llm_hour_notation(client):
@@ -96,7 +96,7 @@ def test_llm_hour_notation(client):
             expected_output="De vergadering begint om 15.30 uur."
         )
     ])
-    answer_relevancy_metric = AnswerRelevancyMetric(threshold=0.95, verbose_mode=True, model="gpt-4o-mini", strict_mode=True)
+    answer_relevancy_metric = AnswerRelevancyMetric(threshold=0.95, model="gpt-4o-mini", strict_mode=True)
     evaluate(dataset, metrics=[answer_relevancy_metric])
 
 def test_llm_valuta_notation(client):
@@ -113,7 +113,7 @@ def test_llm_valuta_notation(client):
             expected_output="De prijs is 19,99 euro per persoon."
         )
     ])
-    answer_relevancy_metric = AnswerRelevancyMetric(threshold=0.95, verbose_mode=True, model="gpt-4o-mini", strict_mode=True)
+    answer_relevancy_metric = AnswerRelevancyMetric(threshold=0.95, model="gpt-4o-mini", strict_mode=True)
     evaluate(dataset, metrics=[answer_relevancy_metric])
 
 def test_llm_date_notation(client):
@@ -130,5 +130,34 @@ def test_llm_date_notation(client):
             expected_output="De afspraak is op 25 maart 2023."
         )
     ])
-    answer_relevancy_metric = AnswerRelevancyMetric(threshold=0.95, verbose_mode=True, model="gpt-4o-mini", strict_mode=True)
+    answer_relevancy_metric = AnswerRelevancyMetric(threshold=0.95, model="gpt-4o-mini", strict_mode=True)
+    evaluate(dataset, metrics=[answer_relevancy_metric])
+
+def test_llm_spellcheck(client):
+    """Test LLM's ability to rewrite date formats."""
+    dataset = EvaluationDataset(test_cases=[
+        LLMTestCase(
+            input="De hond loopt los in de park.",
+            actual_output=write_sentence(client, "De hond loopt los in de park."),
+            expected_output="De hond loopt los in het park."
+        ),
+        LLMTestCase(
+            input="Ik heb geen ide wat je bedoelt.",
+            actual_output=write_sentence(client, "Ik heb geen ide wat je bedoelt."),
+            expected_output="Ik heb geen idee wat je bedoelt."
+        )
+    ])
+    answer_relevancy_metric = AnswerRelevancyMetric(threshold=0.95, model="gpt-4o-mini", strict_mode=True)
+    evaluate(dataset, metrics=[answer_relevancy_metric])
+
+def test_llm_html_layout(client):
+    """Test LLM's ability to rewrite date formats."""
+    dataset = EvaluationDataset(test_cases=[
+        LLMTestCase(
+            input="De <strong>appel</strong> is groen",
+            actual_output=write_sentence(client, "De <strong>appel</strong> is groen"),
+            expected_output="De <strong>appel</strong> is groen"
+        )
+    ])
+    answer_relevancy_metric = AnswerRelevancyMetric(threshold=1.0, model="gpt-4o-mini", strict_mode=True)
     evaluate(dataset, metrics=[answer_relevancy_metric])
