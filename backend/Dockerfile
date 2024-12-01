@@ -1,5 +1,5 @@
 # Single-stage: Build and Runtime with CUDA
-FROM nvidia/cuda:12.6.2-devel-ubuntu22.04
+FROM nvidia/cuda:12.6.2-runtime-ubuntu22.04
 
 # Install required dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -13,8 +13,7 @@ WORKDIR /app
 # Install Python dependencies
 COPY requirements.txt . 
 RUN pip3 install --no-cache-dir -r requirements.txt && \
-    python3 -m spacy download nl_core_news_md && \
-    which gunicorn && gunicorn --version
+    python3 -m spacy download nl_core_news_md
 
 # Copy application files
 COPY . .
