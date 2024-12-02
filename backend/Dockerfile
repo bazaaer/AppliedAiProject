@@ -28,4 +28,5 @@ EXPOSE 5000
 ENV PATH="/usr/local/bin:$PATH"
 
 # Default command
-CMD ["gunicorn", "app:app", "--workers", "8", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:5000", "--timeout", "120"]
+CMD ["gunicorn", "app:app", "--workers", "8", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:5000", "--timeout", "120", "--preload"]
+
