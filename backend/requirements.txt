@@ -18,3 +18,5 @@ redis==5.2.0
 uvicorn==0.32.0
 bs4
 uvloop
+pytz
+aiohttp
