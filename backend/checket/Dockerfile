@@ -13,6 +13,7 @@ WORKDIR /app
 # Install Python dependencies
 COPY requirements.txt . 
 RUN pip3 install --no-cache-dir -r requirements.txt && \
+    pip3 install "ray[serve]" && \
     python3 -m spacy download nl_core_news_md && \
     rm -rf ~/.cache/pip
 
