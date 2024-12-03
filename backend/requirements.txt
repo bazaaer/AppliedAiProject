@@ -5,9 +5,6 @@ Quart-JWT-Extended==0.1.0
 
 # Flask and related packages
 Flask==3.0.0
-markdown2==2.5.1
-html2text==2024.2.26
-python-dotenv
 
 # Database and authentication
 motor==3.6.0
@@ -21,13 +18,3 @@ redis==5.2.0
 uvicorn==0.32.0
 bs4
 uvloop
-
-
-huggingface-hub==0.26.2
-ollama==0.3.3
-safetensors==0.4.5
-spacy==3.7.5
-torch==2.5.1
-sentence-transformers==3.3.0
-pytz==2024.2
-cupy-cuda12x==13.3.0

@@ -1,16 +1,14 @@
 # api/model.py
 from quart import Blueprint, request, jsonify
 from api.utils import jwt_or_api_key_required
-from checket.grouper import SentenceGrouper
-from checket.checker import SimilarityEvaluator
 from bs4 import BeautifulSoup
-
-grouper = SentenceGrouper(model="nl_core_news_md", similarity_threshold=0.80)
-
-training_embeddings_path = "checket/embeddings.pt"
-similarity_evaluator = SimilarityEvaluator(training_embeddings_path)
+import aiohttp
+import os
 
 model_blueprint = Blueprint('model', __name__)
+
+RAY_SERVE_BASE_URL = os.getenv("RAY_SERVE_BASE_URL", "http://localhost:8000")
+print(f"RAY_SERVE_BASE_URL: {RAY_SERVE_BASE_URL}")
 
 @model_blueprint.route('/api', methods=['GET'])
 async def index():
@@ -29,31 +27,61 @@ async def score():
     # Parse the request data
     request_data = await request.get_json()
     html_text = request_data.get("text", "")
-    
-    # Extract plain text from HTML
+
+    if not html_text:
+        return jsonify({"error": "No text provided in the request"}), 400
+
+    # Parse the HTML and extract plain text
     soup = BeautifulSoup(html_text, "html.parser")
     plain_text = soup.get_text()
 
-    # Group consecutive similar sentences
-    result = grouper.group_consecutive_similar_sentences(plain_text)
+    # Make asynchronous HTTP requests to Ray Serve endpoints
+    async with aiohttp.ClientSession() as session:
+        try:
+            # Call the Sentence Grouper endpoint
+            async with session.post(
+                f"{RAY_SERVE_BASE_URL}/grouper",
+                json={"text": plain_text},
+                headers={"Content-Type": "application/json"}
+            ) as grouper_response:
+                if grouper_response.status != 200:
+                    error_text = await grouper_response.text()
+                    return jsonify({"error": "Grouper failed", "details": error_text}), 500
+                grouper_data = await grouper_response.json()
 
-    # Initialize the response with re-applied HTML
+            # Extract grouped sentences
+            grouped_sentences = [group[0] for group in grouper_data["result"]]
+
+            # Call the Similarity Evaluator endpoint
+            async with session.post(
+                f"{RAY_SERVE_BASE_URL}/evaluator",
+                json={"sentences": grouped_sentences},
+                headers={"Content-Type": "application/json"}
+            ) as evaluator_response:
+                if evaluator_response.status != 200:
+                    error_text = await evaluator_response.text()
+                    return jsonify({"error": "Evaluator failed", "details": error_text}), 500
+                evaluator_data = await evaluator_response.json()
+
+        except aiohttp.ClientError as e:
+            return jsonify({"error": "HTTP request failed", "details": str(e)}), 500
+
+    # Reapply HTML tags to the processed sentences
     response = []
-    for sentence, group_index in result:
-        # Compute similarity score
-        score = similarity_evaluator.topk_mean_similarity_score(sentence, k=8)
+    for group_index, (sentence, score_data) in enumerate(zip(grouped_sentences, evaluator_data["result"])):
+        original_html = next(
+            (str(tag) for tag in soup.find_all() if sentence in tag.get_text()),
+            sentence # Use plain text if no match is found
+        )
 
-        # Find the original sentence in the HTML
-        original_html = next((str(tag) for tag in soup.find_all() if sentence in tag.get_text()), sentence)
-
-        # Append to the response
+        # Append the original HTML with group and score information
         response.append({
-            "sentence": original_html,  # Use the original HTML
+            "sentence": original_html,
             "group": group_index,
-            "score": score
+            "score": score_data.get("score", 0)
         })
 
-    return jsonify(response), 200
+    return jsonify({"result": response})
 
 @model_blueprint.route("/api/texts/rewrite", methods=["POST"])
 @jwt_or_api_key_required(["admin", "user"])
