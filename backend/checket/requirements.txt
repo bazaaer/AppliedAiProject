@@ -1,6 +1,4 @@
-ray[serve]
 huggingface-hub==0.26.2
-ollama==0.3.3
 safetensors==0.4.5
 spacy==3.7.5
 torch==2.5.1

@@ -27,4 +27,4 @@ EXPOSE 8000 8265
 
 # Default command to run Ray Serve application
 CMD ["ray", "start", "--head", "--dashboard-host=0.0.0.0", "--block"] && \
-    ["ray", "serve", "deploy", "config.yaml"]
+    ["serve", "deploy", "config.yaml"]
