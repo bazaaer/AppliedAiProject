@@ -1,14 +1,12 @@
-name: Build and Push Backend Docker Image
+name: Build and Push Rayserve Docker Image
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'backend/**'
-      - '.github/workflows/backend.yml'
-    paths-ignore:
       - 'backend/checket/**'
+      - '.github/workflows/model.yml'
 
 jobs:
   build-and-push:
@@ -33,7 +31,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: ./backend/checket
+          file: ./backend/checket/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/klopta-backend:latest
+          tags: ghcr.io/${{ github.repository_owner }}/klopta-model:latest
