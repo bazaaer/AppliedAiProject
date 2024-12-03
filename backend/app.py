@@ -3,11 +3,9 @@ from quart_cors import cors
 from quart_jwt_extended import JWTManager
 import os
 from config import ACCESS_EXPIRES, revoked_store
-from dotenv import load_dotenv
 from api import auth_blueprint, model_blueprint, users_bleuprint, api_keys_blueprint
 from config import ADMIN_USERNAME, ADMIN_PASSWORD
 
-load_dotenv()
 
 app = Quart(__name__, static_folder="static")
 app = cors(app)

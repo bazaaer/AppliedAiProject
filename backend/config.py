@@ -2,9 +2,6 @@
 import os
 from datetime import timedelta
 import redis
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Define expiration time for access tokens
 ACCESS_EXPIRES = timedelta(days=7)

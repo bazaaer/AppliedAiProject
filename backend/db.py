@@ -1,9 +1,7 @@
 # db.py
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
 MONGO_USER = os.getenv("MONGO_USER", "root")
 MONGO_PASSWORD = os.getenv("MONGO_PASSWORD", "examplepassword")
 MONGO_HOST = os.getenv("MONGO_HOST", "localhost")
