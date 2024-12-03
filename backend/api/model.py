@@ -22,7 +22,6 @@ async def index():
     return jsonify({"msg": "Klopta API is running"}), 200
 
 @model_blueprint.route("/api/texts/score", methods=["POST"])
-# @jwt_or_api_key_required(["admin", "user"])
 async def score():
     # Parse the request data
     request_data = await request.get_json()
@@ -69,10 +68,19 @@ async def score():
     # Reapply HTML tags to the processed sentences
     response = []
     for group_index, (sentence, score_data) in enumerate(zip(grouped_sentences, evaluator_data["result"])):
-        original_html = next(
-            (str(tag) for tag in soup.find_all() if sentence in tag.get_text()),
-            sentence # Use plain text if no match is found
-        )
+        # Find the exact tag containing the sentence, matching sentence boundaries
+        for tag in soup.find_all():
+            tag_text = tag.get_text()
+            # Look for exact sentence matches
+            if sentence in tag_text:
+                start_index = tag_text.find(sentence)
+                end_index = start_index + len(sentence)
+                # Extract the matched HTML fragment
+                original_html = str(tag)[start_index:end_index]
+                break
+        else:
+            # Use plain text if no match is found
+            original_html = sentence
 
         # Append the original HTML with group and score information
         response.append({
@@ -81,7 +89,7 @@ async def score():
             "score": score_data.get("score", 0)
         })
 
-    return jsonify({"result": response})
+    return jsonify({"result": response}), 200
 
 @model_blueprint.route("/api/texts/rewrite", methods=["POST"])
 @jwt_or_api_key_required(["admin", "user"])
