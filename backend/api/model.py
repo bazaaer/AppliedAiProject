@@ -1,98 +1,103 @@
-# api/model.py
-from quart import Blueprint, request, jsonify
-from api.utils import jwt_or_api_key_required
-from bs4 import BeautifulSoup
+from quart import Blueprint, request, jsonify, current_app, Response
 import aiohttp
 import os
+from bs4 import BeautifulSoup
+from api.utils import jwt_or_api_key_required, jwt_role_required
 
 model_blueprint = Blueprint('model', __name__)
 
-RAY_SERVE_BASE_URL = os.getenv("RAY_SERVE_BASE_URL", "http://localhost:8000")
-print(f"RAY_SERVE_BASE_URL: {RAY_SERVE_BASE_URL}")
+RAY_SERVE_URL = os.getenv("RAY_SERVE_URL", "http://localhost:8000")
+RAY_DASHBOARD_URL = os.getenv("RAY_DASHBOARD_URL", "http://localhost:8265")
 
 @model_blueprint.route('/api', methods=['GET'])
 async def index():
     """
     Check if the API is running.
-    This asynchronous function returns a JSON response to indicate that the API is running.
-    Returns:
-        Response: A JSON response with a message indicating that the API is running.
     """
-
     return jsonify({"msg": "Klopta API is running"}), 200
 
 @model_blueprint.route("/api/texts/score", methods=["POST"])
+# @jwt_or_api_key_required(["admin", "user"])
 async def score():
-    # Parse the request data
-    request_data = await request.get_json()
-    html_text = request_data.get("text", "")
+    """
+    Endpoint to score texts using Ray Serve.
+    """
+    try:
+        request_data = await request.get_json()
 
-    if not html_text:
-        return jsonify({"error": "No text provided in the request"}), 400
+        if not isinstance(request_data, dict):
+            return jsonify({"error": "Invalid input: JSON object expected"}), 400
 
-    # Parse the HTML and extract plain text
-    soup = BeautifulSoup(html_text, "html.parser")
-    plain_text = soup.get_text()
+        html_text = request_data.get("text", None)
+        if not isinstance(html_text, str) or not html_text.strip():
+            return jsonify({"error": "Invalid input: 'text' must be a non-empty string"}), 400
 
-    # Make asynchronous HTTP requests to Ray Serve endpoints
-    async with aiohttp.ClientSession() as session:
+        soup = BeautifulSoup(html_text, "html.parser")
+        cleaned_text = soup.get_text(separator=" ").strip()
+
+        if not cleaned_text:
+            return jsonify({"error": "Input text becomes empty after removing HTML tags"}), 400
+
+        session = current_app.aiohttp_session
         try:
-            # Call the Sentence Grouper endpoint
-            async with session.post(
-                f"{RAY_SERVE_BASE_URL}/grouper",
-                json={"text": plain_text},
-                headers={"Content-Type": "application/json"}
-            ) as grouper_response:
-                if grouper_response.status != 200:
-                    error_text = await grouper_response.text()
-                    return jsonify({"error": "Grouper failed", "details": error_text}), 500
-                grouper_data = await grouper_response.json()
+            async with session.post(f"{RAY_SERVE_URL}/pipeline", json={"text": cleaned_text}) as response:
+                if response.status != 200:
+                    return jsonify({
+                        "error": "Error from Ray Serve",
+                        "details": await response.text()
+                    }), response.status
 
-            # Extract grouped sentences
-            grouped_sentences = [group[0] for group in grouper_data["result"]]
-
-            # Call the Similarity Evaluator endpoint
-            async with session.post(
-                f"{RAY_SERVE_BASE_URL}/evaluator",
-                json={"sentences": grouped_sentences},
-                headers={"Content-Type": "application/json"}
-            ) as evaluator_response:
-                if evaluator_response.status != 200:
-                    error_text = await evaluator_response.text()
-                    return jsonify({"error": "Evaluator failed", "details": error_text}), 500
-                evaluator_data = await evaluator_response.json()
-
+                ray_response = await response.json()
+                return jsonify(ray_response)
         except aiohttp.ClientError as e:
-            return jsonify({"error": "HTTP request failed", "details": str(e)}), 500
+            return jsonify({
+                "error": "Failed to connect to Ray Serve",
+                "details": str(e)
+            }), 500
 
-    # Reapply HTML tags to the processed sentences
-    response = []
-    for group_index, (sentence, score_data) in enumerate(zip(grouped_sentences, evaluator_data["result"])):
-        # Find the exact tag containing the sentence, matching sentence boundaries
-        for tag in soup.find_all():
-            tag_text = tag.get_text()
-            # Look for exact sentence matches
-            if sentence in tag_text:
-                start_index = tag_text.find(sentence)
-                end_index = start_index + len(sentence)
-                # Extract the matched HTML fragment
-                original_html = str(tag)[start_index:end_index]
-                break
-        else:
-            # Use plain text if no match is found
-            original_html = sentence
+    except Exception as e:
+        return jsonify({
+            "error": "Invalid request payload",
+            "details": str(e)
+        }), 400
 
-        # Append the original HTML with group and score information
-        response.append({
-            "sentence": original_html,
-            "group": group_index,
-            "score": score_data.get("score", 0)
-        })
+@model_blueprint.route('/api/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
+# @jwt_role_required(["admin"])
+async def proxy_dashboard(path):
+    """
+    Proxy route for the Ray dashboard API and dashboard paths.
+    """
+    session = current_app.aiohttp_session
+    is_dashboard_path = path.startswith("dashboard")
+    base_url = RAY_DASHBOARD_URL if is_dashboard_path else f"{RAY_DASHBOARD_URL}/{path}"
+    
+    url = f"{RAY_DASHBOARD_URL}/{path}" if is_dashboard_path else base_url
+    try:
+        async with session.request(
+            method=request.method,
+            url=url,
+            headers={key: value for key, value in request.headers if key.lower() != 'host'},
+            params=request.args,
+            data=await request.get_data()
+        ) as response:
+            headers = {key: value for key, value in response.headers.items() if key.lower() != 'transfer-encoding'}
+            body = await response.read()
+            return Response(body, status=response.status, headers=headers)
+    except aiohttp.ClientError as e:
+        return jsonify({"error": f"Failed to fetch Ray API endpoint: {path}", "details": str(e)}), 502
 
-    return jsonify({"result": response}), 200
 
-@model_blueprint.route("/api/texts/rewrite", methods=["POST"])
-@jwt_or_api_key_required(["admin", "user"])
-async def rewrite():
-    request_data = await request.get_json()
-    return jsonify({"msg": "rewrite successful", "data": request_data}), 200
+@model_blueprint.route('/api/dashboard', methods=['GET'])
+# @jwt_role_required(["admin"])
+async def proxy_dashboard_root():
+    """
+    Proxy route for the root of the Ray dashboard.
+    """
+    session = current_app.aiohttp_session
+    try:
+        async with session.get(RAY_DASHBOARD_URL) as response:
+            headers = {key: value for key, value in response.headers.items() if key.lower() != 'transfer-encoding'}
+            body = await response.read()
+            return Response(body, status=response.status, headers=headers)
+    except aiohttp.ClientError as e:
+        return jsonify({"error": "Failed to connect to Ray Dashboard", "details": str(e)}), 502
