@@ -26,11 +26,11 @@ logging_config:
 
 applications:
 
-- name: grouper
+- name: model_server
 
-  route_prefix: /grouper
+  route_prefix: /
 
-  import_path: rayserve:grouper_app
+  import_path: rayserve:pipeline_app
 
   runtime_env: {}
 
@@ -41,17 +41,9 @@ applications:
       num_cpus: 1.0
       num_gpus: 0.2
 
-- name: evaluator
-
-  route_prefix: /evaluator
-
-  import_path: rayserve:evaluator_app
-
-  runtime_env: {}
-
-  deployments:
-
   - name: SimilarityEvaluatorDeployment
     ray_actor_options:
       num_cpus: 1.0
       num_gpus: 0.8
+
+  - name: Pipeline
