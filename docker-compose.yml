@@ -17,7 +17,7 @@ services:
       - MONGO_PORT=27017
       - REDIS_HOST=KL-redis
       - REDIS_PORT=6379
-      - RAY_SERVE_BASE_URL=http://KL-model:8000
+      - RAY_SERVE_URL=http://KL-model:8000
     networks:
       - KL-database_network
       - KL-model_network
