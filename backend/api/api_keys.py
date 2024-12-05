@@ -55,7 +55,7 @@ async def generate_api_key():
     new_api_key = secrets.token_hex(32)
     hashed_key = hashlib.sha256(new_api_key.encode('utf-8')).hexdigest()
 
-    expires_at = datetime.now(timezone.utc) + timedelta(seconds=60)
+    expires_at = datetime.now(timezone.utc) + timedelta(seconds=300)
 
     # Store the API key with the given name, expiration date, and other details
     await api_keys_collection.insert_one({
