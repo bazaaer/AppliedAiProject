@@ -96,6 +96,11 @@ ClassicEditor.defaultConfig = {
 			'testButton'
 		]
 	},
+	ui: {
+		viewportOffset: {
+            top: 73
+        }
+    },
 	image: {
 		toolbar: [
 			'imageStyle:full',
