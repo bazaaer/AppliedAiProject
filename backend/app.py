@@ -3,7 +3,7 @@ from quart_cors import cors
 from quart_jwt_extended import JWTManager
 import os
 from config import ACCESS_EXPIRES, revoked_store
-from api import auth_blueprint, model_blueprint, users_bleuprint, api_keys_blueprint
+from api import auth_blueprint, model_blueprint, users_bleuprint, api_keys_blueprint, llm_blueprint
 from config import ADMIN_USERNAME, ADMIN_PASSWORD
 import aiohttp
 
@@ -23,6 +23,7 @@ app.register_blueprint(auth_blueprint)
 app.register_blueprint(model_blueprint)
 app.register_blueprint(users_bleuprint)
 app.register_blueprint(api_keys_blueprint)
+app.register_blueprint(llm_blueprint)
 
 @jwt.token_in_blacklist_loader
 def check_if_token_is_revoked(decrypted_token):
