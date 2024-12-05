@@ -4,7 +4,7 @@ from api.utils import jwt_or_api_key_required
 
 llm_blueprint = Blueprint('llm', __name__)
 
-@llm_blueprint.route("/api/texts/rewrite", methods=["POST"])
+@llm_blueprint.route("/api/model/rewrite", methods=["POST"])
 @jwt_or_api_key_required(["admin", "user"])
 async def rewrite():
     request_data = await request.get_json()

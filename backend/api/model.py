@@ -16,7 +16,8 @@ async def index():
     """
     return jsonify({"msg": "Klopta API is running"}), 200
 
-@model_blueprint.route("/api/texts/score", methods=["POST"])
+@model_blueprint.route("/api/model/score", methods=["POST"])
+@jwt_or_api_key_required(["admin", "user"])
 async def score():
     """
     Endpoint to score texts using Ray Serve.
@@ -73,9 +74,23 @@ async def score():
             "details": str(e)
         }), 400
 
+@model_blueprint.route('/api/model/dashboard', methods=['GET'])
+@jwt_role_required(["admin"])
+async def proxy_dashboard_root():
+    """
+    Proxy route for the root of the Ray dashboard.
+    """
+    session = current_app.aiohttp_session
+    try:
+        async with session.get(RAY_DASHBOARD_URL) as response:
+            headers = {key: value for key, value in response.headers.items() if key.lower() != 'transfer-encoding'}
+            body = await response.read()
+            return Response(body, status=response.status, headers=headers)
+    except aiohttp.ClientError as e:
+        return jsonify({"error": "Failed to connect to Ray Dashboard", "details": str(e)}), 502
 
-@model_blueprint.route('/api/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
-# @jwt_role_required(["admin"])
+@model_blueprint.route('/api/model/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
+@jwt_role_required(["admin"])
 async def proxy_dashboard(path):
     """
     Proxy route for the Ray dashboard API and dashboard paths.
@@ -98,19 +113,3 @@ async def proxy_dashboard(path):
             return Response(body, status=response.status, headers=headers)
     except aiohttp.ClientError as e:
         return jsonify({"error": f"Failed to fetch Ray API endpoint: {path}", "details": str(e)}), 502
-
-
-@model_blueprint.route('/api/dashboard', methods=['GET'])
-# @jwt_role_required(["admin"])
-async def proxy_dashboard_root():
-    """
-    Proxy route for the root of the Ray dashboard.
-    """
-    session = current_app.aiohttp_session
-    try:
-        async with session.get(RAY_DASHBOARD_URL) as response:
-            headers = {key: value for key, value in response.headers.items() if key.lower() != 'transfer-encoding'}
-            body = await response.read()
-            return Response(body, status=response.status, headers=headers)
-    except aiohttp.ClientError as e:
-        return jsonify({"error": "Failed to connect to Ray Dashboard", "details": str(e)}), 502
