@@ -40,7 +40,7 @@ async def score():
 
         session = current_app.aiohttp_session
         try:
-            async with session.post(f"{RAY_SERVE_URL}/pipeline", json={"text": cleaned_text}) as response:
+            async with session.post(f"{RAY_SERVE_URL}", json={"text": cleaned_text}) as response:
                 if response.status != 200:
                     return jsonify({
                         "error": "Error from Ray Serve",
