@@ -17,7 +17,6 @@ async def index():
     return jsonify({"msg": "Klopta API is running"}), 200
 
 @model_blueprint.route("/api/texts/score", methods=["POST"])
-# @jwt_or_api_key_required(["admin", "user"])
 async def score():
     """
     Endpoint to score texts using Ray Serve.
@@ -28,19 +27,32 @@ async def score():
         if not isinstance(request_data, dict):
             return jsonify({"error": "Invalid input: JSON object expected"}), 400
 
-        html_text = request_data.get("text", None)
-        if not isinstance(html_text, str) or not html_text.strip():
-            return jsonify({"error": "Invalid input: 'text' must be a non-empty string"}), 400
+        text_input = request_data.get("text", None)
 
-        soup = BeautifulSoup(html_text, "html.parser")
-        cleaned_text = soup.get_text(separator=" ").strip()
+        # Validate the input
+        if isinstance(text_input, str):
+            texts = [text_input.strip()]  # Wrap a single string in a list
+        elif isinstance(text_input, list) and all(isinstance(t, str) and t.strip() for t in text_input):
+            texts = [t.strip() for t in text_input]  # Clean and process the list
+        else:
+            return jsonify({
+                "error": "Invalid input: 'text' must be a non-empty string or a list of non-empty strings"
+            }), 400
 
-        if not cleaned_text:
-            return jsonify({"error": "Input text becomes empty after removing HTML tags"}), 400
+        # Clean each text by removing HTML tags
+        cleaned_texts = []
+        for text in texts:
+            soup = BeautifulSoup(text, "html.parser")
+            cleaned_text = soup.get_text(separator=" ").strip()
+            if not cleaned_text:
+                return jsonify({
+                    "error": "One or more inputs become empty after removing HTML tags"
+                }), 400
+            cleaned_texts.append(cleaned_text)
 
         session = current_app.aiohttp_session
         try:
-            async with session.post(f"{RAY_SERVE_URL}", json={"text": cleaned_text}) as response:
+            async with session.post(f"{RAY_SERVE_URL}", json={"text": cleaned_texts}) as response:
                 if response.status != 200:
                     return jsonify({
                         "error": "Error from Ray Serve",
@@ -60,6 +72,7 @@ async def score():
             "error": "Invalid request payload",
             "details": str(e)
         }), 400
+
 
 @model_blueprint.route('/api/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
 # @jwt_role_required(["admin"])
