@@ -60,7 +60,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <MTNavbar shadow={false} fullWidth className="border-0 sticky top-0 z-50">
+    <MTNavbar shadow={false} fullWidth className="border-0 sticky top-0 z-[1001]">
       <div className="container mx-auto flex items-center justify-between">
         <Typography
           as="a"
