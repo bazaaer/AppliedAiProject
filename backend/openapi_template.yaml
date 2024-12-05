@@ -424,7 +424,7 @@ paths:
               schema:
                 type: string
                 example: Klopta API is running!
-  /api/texts/rewrite:
+  /api/model/rewrite:
     post:
       summary: Rewrite text
       description: >
@@ -467,6 +467,79 @@ paths:
       security:
         - BearerAuth: []
         - ApiKeyAuth: []
+
+  /api/model/score:
+    post:
+      summary: Score texts using Ray Serve
+      description: >
+        This endpoint scores texts using the Ray Serve backend. Requires a valid JWT or API key.
+      tags:
+        - Model
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: [string, array]
+                  description: >
+                    Input text or a list of texts to be scored. Texts are cleaned by removing HTML tags.
+      responses:
+        '200':
+          description: Scoring successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scores:
+                    type: array
+                    items:
+                      type: number
+                    description: Scores for the provided texts
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error from Ray Serve or server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+
+  /api/model/dashboard:
+    get:
+      summary: Proxy Ray Dashboard
+      description: >
+        Proxy route for the root of the Ray dashboard. Requires an admin role.
+      tags:
+        - Model
+      responses:
+        '200':
+          description: Dashboard proxy response
+          content:
+            text/html:
+              schema:
+                type: string
+                description: HTML content of the Ray dashboard
+        '502':
+          description: Failed to connect to Ray Dashboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth: []
 components:
   securitySchemes:
     BearerAuth:
