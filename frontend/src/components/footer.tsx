@@ -23,13 +23,13 @@ export function Footer() {
             className="text-2xl md:text-3xl text-center font-bold bg-gray-500 bg-opacity-10 backdrop-blur p-5 rounded-lg"
             color="white"
           >
-            Don't be scared to message us!
+            Questions? Message us!
           </Typography>
           <Typography
             color="white"
-            className="md:w-7/12 text-center my-3 !text-base bg-gray-500 bg-opacity-10 backdrop-blur-sm p-2 rounded-lg"
+            className="px-100 text-center my-3 !text-base bg-gray-500 bg-opacity-10 backdrop-blur-sm p-2 rounded-lg"
           >
-            If you have any questions you can email us at john.doe@gmail.com
+            You can always email us at john.doe@gmail.com
           </Typography>
         </div>
 
