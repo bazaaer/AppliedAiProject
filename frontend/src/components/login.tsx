@@ -6,10 +6,9 @@ import { useAuth } from "@/context/authContext";  // Import the context to updat
 
 interface LoginProps {
   onClose: () => void;
-  onLoginSuccess: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onClose, onLoginSuccess }) => {
+const Login: React.FC<LoginProps> = ({ onClose }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
