@@ -27,4 +27,4 @@ ENV PATH="/usr/local/bin:$PATH"
 EXPOSE 8000 8265
 
 # Default command to run Ray Serve application
-CMD ["/bin/bash", "-c", "ray start --head && serve deploy config.yaml && tail -f /dev/null"]
+CMD ["/bin/bash", "-c", "ray start --head --dashboard-host=0.0.0.0 && serve deploy config.yaml && tail -f /dev/null"]
