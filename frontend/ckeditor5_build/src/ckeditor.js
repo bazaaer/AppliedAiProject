@@ -98,7 +98,7 @@ ClassicEditor.defaultConfig = {
 	},
 	ui: {
 		viewportOffset: {
-            top: 73
+            top: 72
         }
     },
 	image: {
