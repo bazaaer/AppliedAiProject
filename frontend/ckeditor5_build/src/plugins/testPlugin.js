@@ -49,7 +49,7 @@ export default class testPlugin extends Plugin {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
-                'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MzMzODk3MDMsIm5iZiI6MTczMzM4OTcwMywianRpIjoiNmU0OGM5OTUtMDJjYS00YmRhLWI1YmYtMGNhOTA5MzA1N2YwIiwiZXhwIjoxNzMzOTk0NTAzLCJpZGVudGl0eSI6ImFkbWluIiwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIiwidXNlcl9jbGFpbXMiOnsicm9sZSI6ImFkbWluIn19.HzBSQ5EsyOPJoTVxEC8ik0do1X2_O9XSDEJ_7XX9K_I',
+                'Authorization':'Bearer "token"',
                 'Content-Type': 'application/json'
 
             },
