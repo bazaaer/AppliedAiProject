@@ -1,8 +1,9 @@
-import time
-import spacy
-import cupy as cp
-from typing import List, Tuple
 import re
+import time
+from typing import List, Tuple
+
+import cupy as cp
+import spacy
 
 
 class SentenceGrouper:
@@ -21,7 +22,9 @@ class SentenceGrouper:
         are extended to include subsequent text up to the corresponding closing tag.
     """
 
-    def __init__(self, model: str = "nl_core_news_md", similarity_threshold: float = 0.75):
+    def __init__(
+        self, model: str = "nl_core_news_md", similarity_threshold: float = 0.75
+    ):
         self.nlp = spacy.load(model)
         spacy.prefer_gpu()
         self.similarity_threshold = similarity_threshold
