@@ -14,7 +14,7 @@ model_name = ("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 model = SentenceTransformer(model_name).to(device)  # Move model to GPU
 
 # Load your dataset
-df = pd.read_csv("cleaned_training.csv")
+df = pd.read_csv("../cleaned_training.csv")
 
 # Prepare training examples
 train_examples = [
@@ -49,7 +49,7 @@ loss = CoSENTLoss(model)
 # Set training arguments
 args = SentenceTransformerTrainingArguments(
     # Output configuration
-    output_dir="output/paraphrase-multilingual-MiniLM-L12-v2",
+    output_dir="../training/output/paraphrase-multilingual-MiniLM-L12-v2",
 
     # Training performance parameters
     warmup_steps=64,

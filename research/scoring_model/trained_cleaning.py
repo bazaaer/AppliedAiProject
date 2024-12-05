@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Load the dataset
-df = pd.read_csv('training.csv')
+df = pd.read_csv('../training.csv')
 
 # Clean `sentence2` where its length is more than 1.5 times the length of `sentence1`
 df = df[

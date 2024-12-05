@@ -2,7 +2,7 @@ import pandas as pd
 import torch
 from sentence_transformers import SentenceTransformer
 
-model_path = "output/finetuned_paraphrase-multilingual-mpnet-base-v2/final"
+model_path = "/output/finetuned_paraphrase-multilingual-mpnet-base-v2/final"
 model = SentenceTransformer(model_path)
 
 training_data_path = "cleaned_training.csv"

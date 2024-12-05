@@ -3,7 +3,7 @@ import time
 import torch
 from sentence_transformers import SentenceTransformer
 
-model_path = "output/finetuned_paraphrase-multilingual-mpnet-base-v2/final"
+model_path = "../output/finetuned_paraphrase-multilingual-mpnet-base-v2/final"
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = SentenceTransformer(model_path, device=device)
 
