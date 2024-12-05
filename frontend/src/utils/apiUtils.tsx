@@ -1,8 +1,6 @@
-'use client';
-
 import React, { useState } from "react";
 import { Typography, Button } from "@material-tailwind/react";
-import { useAuth } from "@/context/authContext";  // Import the context to update the token
+import { useAuth } from '../context/authContext';
 
 interface LoginProps {
   onClose: () => void;
@@ -13,8 +11,7 @@ const Login: React.FC<LoginProps> = ({ onClose, onLoginSuccess }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  
-  const { setToken, setRole } = useAuth();  // Access context methods to set token and role
+  const { login } = useAuth(); // Access the login function from AuthContext
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,17 +30,12 @@ const Login: React.FC<LoginProps> = ({ onClose, onLoginSuccess }) => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        
-        // Store the API key (token) and role in the context
-        setToken(data.api_key);  // Store the api_key as token
-        setRole(data.role);      // Store the role (if necessary)
-
-        // Close the login popup and notify the app about successful login
+        const data = await response.text();
+        console.log(data); // Bearer token will be returned
+        login(data); // Store the token in context
         onLoginSuccess();
         onClose();
       } else {
-        // Attempt to extract and show the server's error message
         try {
           const errorData = await response.json();
           setErrorMessage(errorData.message || "Login failed. Please try again.");
