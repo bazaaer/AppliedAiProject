@@ -32,26 +32,34 @@ const Login: React.FC<LoginProps> = ({ onClose, onLoginSuccess }) => {
         body: JSON.stringify({ username, password }),
       });
 
+      // Debugging: Log the response status
+      console.log("Response status:", response.status);
+
       if (response.ok) {
         const data = await response.json();
-        
+        console.log("Login success:", data);  // Log the successful response
+
         // Store the API key (token) and role in the context
         setToken(data.api_key);  // Store the api_key as token
         setRole(data.role);      // Store the role (if necessary)
 
         // Close the login popup and notify the app about successful login
-        onLoginSuccess();
         onClose();
       } else {
-        // Attempt to extract and show the server's error message
+        // If the response is not OK, we handle the error here
+        console.log("Error response:", response);
         try {
           const errorData = await response.json();
+          console.log("Error data:", errorData);
           setErrorMessage(errorData.message || "Login failed. Please try again.");
-        } catch {
+        } catch (parseError) {
+          console.log("Error parsing response:", parseError);
           setErrorMessage("Login failed. An unknown error occurred.");
         }
       }
     } catch (error) {
+      // Catch any unexpected errors
+      console.log("Unexpected error:", error);
       setErrorMessage("An unexpected error occurred. Please try again.");
     }
   };
