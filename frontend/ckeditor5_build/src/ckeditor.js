@@ -119,23 +119,3 @@ ClassicEditor.defaultConfig = {
 	// This value must be kept in sync with the language defined in webpack.config.js.
 	language: 'en'
 };
-
-/*
-to test:
-
-	ui: {
-		panel: {
-			sticky: {
-				StickyPanelView: {
-					_stickyTopOffset: 5
-				}
-			}
-		}
-	},
-
-	ui: {
-		viewportOffset: {
-			top: 100
-		}
-	},
-*/
