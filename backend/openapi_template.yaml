@@ -36,9 +36,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  api_key:
+                  token:
                     type: string
                     description: JWT token
+                  role:
+                    type: string
+                    description: User role
         '400':
           description: Bad Request
           content:

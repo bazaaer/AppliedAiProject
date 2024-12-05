@@ -34,5 +34,7 @@ USER nonrootuser
 
 EXPOSE 5000
 
+RUN python generate_openapi.py
+
 # Default command
 CMD ["uvicorn", "--host", "0.0.0.0", "--port", "5000", "--loop", "uvloop", "--http", "h11", "--interface", "asgi3", "--no-access-log", "--workers", "8", "app:app"]
