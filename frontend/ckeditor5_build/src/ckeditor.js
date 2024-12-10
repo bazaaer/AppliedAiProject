@@ -32,8 +32,10 @@ import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformatio
 import CloudServices from '@ckeditor/ckeditor5-cloud-services/src/cloudservices';
 
 import testPlugin from './plugins/testPlugin';
+import scorePlugin from './plugins/scoreplugin';
 import SelectionModePlugin from './plugins/selectplugin';
 import fulltextPlugin from './plugins/fulltextplugin';
+import HighlightPlugin from './plugins/highlightplugintest.js'
 
 export default class ClassicEditor extends ClassicEditorBase {}
 
@@ -64,7 +66,9 @@ ClassicEditor.builtinPlugins = [
 	TextTransformation,
 	// fulltextPlugin,
 	// SelectionModePlugin,
+	scorePlugin,
 	testPlugin,
+	HighlightPlugin,
 	CloudServices
 ];
 
@@ -93,7 +97,9 @@ ClassicEditor.defaultConfig = {
 			'|',
 			// 'fulltextButton',
 			// 'selectionMode',
-			'testButton'
+			'scoreButton',
+			'testButton',
+			'highlightText'
 		]
 	},
 	ui: {

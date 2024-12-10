@@ -5,6 +5,11 @@ import icon from '../Icon_3.svg'
 export default class testPlugin extends Plugin {
     init() {
         const editor = this.editor;
+
+        const apiKey = editor.config.get('testPluginConfig.apiKey');
+        if (!apiKey) {
+            console.warn('No API key provided for testPlugin.');
+        }
         
         editor.ui.componentFactory.add('testButton', locale => {
             const view = new ButtonView(locale);
@@ -15,33 +20,33 @@ export default class testPlugin extends Plugin {
                 withText: false,
                 tooltip: true
             });
-            console.log('MyCustomPlugin initialized 2');
             view.on('execute', () => {
-                this._Replacetext();
+                this._Replacetext(apikey);
             });
 
             return view;
             });
-        console.log('MyCustomPlugin initialized 1');
     }
     //vervangt tekst en laat scores zien
-    _Replacetext() {
+    _Replacetext(apikey) {
         const editor = this.editor;
+        const editorElement = this.editor.ui.view.element;
+
 
         let previewText = editor.getData();
-        previewText = this._sendTextToApi(previewText)
+        previewText = this._sendTextToApi(previewText,apikey)
         console.log(previewText)
 
         editor.setData(previewText);
         const Div = document.createElement('div');
         Div.innerHTML = '<p>Original text score: ???</p><p>New text score: ???</p>';
         Div.style.position = 'absolute';
-        Div.style.top = '10vh';
-        Div.style.right = '-10vw';
-        document.body.appendChild(Div);
+        Div.style.top = '0px';
+        Div.style.right = '10px';
+        editorElement.appendChild(Div);
     }
     //haal verbeterde tekst van api op
-    async _sendTextToApi(text) { // https://klopta.vinnievirtuoso.online/api/docs/index.html https://klopta.vinnievirtuoso.online/api/rewrite
+    async _sendTextToApi(text,apikey) { // https://klopta.vinnievirtuoso.online/api/docs/index.html https://klopta.vinnievirtuoso.online/api/rewrite
         const requestData = {
             text: text
           };
@@ -49,7 +54,7 @@ export default class testPlugin extends Plugin {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
-                'Authorization':'Bearer "token"',
+                'Authorization':`Bearer ${apikey}` ,
                 'Content-Type': 'application/json'
 
             },
