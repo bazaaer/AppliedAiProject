@@ -1,3 +1,5 @@
+'use client';
+
 // components
 import { Navbar, Footer } from "@/components";
 
@@ -5,13 +7,18 @@ import { Navbar, Footer } from "@/components";
 import Demo from "./demo";
 import Body from "./body";
 
+// context
+import { AuthProvider } from "@/context/authContext";
+
 export default function Campaign() {
   return (
-    <>
-      <Navbar />
-      <Demo />
-      <Body />
-      <Footer />
-    </>
+    <AuthProvider>
+      <div>
+        <Navbar />
+        <Demo />
+        <Body />
+        <Footer />
+      </div>
+    </AuthProvider>
   );
 }
