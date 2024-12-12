@@ -1,51 +1,73 @@
 from ray import serve
-from starlette.requests import Request
 from grouper import SentenceGrouper
 from checker import SimilarityEvaluator
+from starlette.requests import Request
 
-
-@serve.deployment(ray_actor_options={"num_gpus": 0.2})
-class SentenceGrouperDeployment:
+@serve.deployment(ray_actor_options={"num_gpus": 0.1, "num_cpus": 1})
+class CombinedPipeline:
     """
-    A deployment wrapper for the SentenceGrouper class.
+    Combines SentenceGrouper and SimilarityEvaluator into a single deployment.
+    Supports batch processing and shared memory caching for intermediate data.
     """
 
-    def __init__(self, model: str = "nl_core_news_md", similarity_threshold: float = 0.75):
+    def __init__(self, model: str, similarity_threshold: float, training_embeddings_path: str, top_k: int = 8):
+        # Initialize SentenceGrouper and SimilarityEvaluator
         self.grouper = SentenceGrouper(model=model, similarity_threshold=similarity_threshold)
-
-    async def process(self, text: str):
-        return self.grouper.group_consecutive_similar_sentences(text)
-
-    async def __call__(self, request: Request):
-        request_data = await request.json()
-        text = request_data.get("text", "")
-        result = await self.process(text)
-        return {"result": result}
-
-
-@serve.deployment(ray_actor_options={"num_gpus": 0.8})
-class SimilarityEvaluatorDeployment:
-    """
-    A deployment wrapper for the SimilarityEvaluator class.
-    """
-
-    def __init__(self, training_embeddings_path: str, top_k: int = 8):
         self.evaluator = SimilarityEvaluator(training_embeddings_path)
         self.top_k = top_k
+        # Initialize Ray object store for caching
+        self.cache = {}
 
-    async def process(self, sentences: list):
-        return [
+    async def process_single_text(self, text: str):
+        """
+        Process a single text to group sentences and evaluate similarity scores.
+        """
+        # Check cache for precomputed embeddings
+        if text in self.cache:
+            grouped_sentences = self.cache[text]
+        else:
+            grouped_sentences = self.grouper.group_consecutive_similar_sentences(text)
+            self.cache[text] = grouped_sentences  # Store in cache
+
+        sentences = [sentence[0] for sentence in grouped_sentences]
+
+        # Evaluate similarity for each grouped sentence
+        sentence_scores = [
             {"sentence": sentence, "score": self.evaluator.topk_mean_similarity_score(sentence, k=self.top_k)}
             for sentence in sentences
         ]
+        return sentence_scores
+
+    async def process_batch(self, texts: list):
+        """
+        Process a batch of texts for sentence grouping and similarity evaluation.
+        """
+        results = []
+        for text in texts:
+            results.extend(await self.process_single_text(text))
+        return results
 
     async def __call__(self, request: Request):
+        """
+        Handle incoming requests for batch or single-text processing.
+        """
         request_data = await request.json()
-        sentences = request_data.get("sentences", [])
-        result = await self.process(sentences)
-        return {"result": result}
+        texts = request_data.get("text", [])
+        print(texts)
+        
+        # Process batch or single text
+        if isinstance(texts, list):
+            result = await self.process_batch(texts)
+        else:
+            result = await self.process_single_text(texts)
+        
+        return {"sentence_scores": result}
 
 
-# Bind deployments into a pipeline
-grouper_app = SentenceGrouperDeployment.bind(model="nl_core_news_md", similarity_threshold=0.80)
-evaluator_app = SimilarityEvaluatorDeployment.bind(training_embeddings_path="embeddings.pt", top_k=8)
+# Create the deployment
+pipeline_app = CombinedPipeline.bind(
+    model="nl_core_news_md",
+    similarity_threshold=0.80,
+    training_embeddings_path="embeddings.pt",
+    top_k=8,
+)

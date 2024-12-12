@@ -13,7 +13,9 @@ WORKDIR /app
 # Install Python dependencies
 COPY requirements.txt . 
 RUN pip3 install --no-cache-dir -r requirements.txt && \
-    python3 -m spacy download nl_core_news_md
+    pip3 install "ray[serve]" && \
+    python3 -m spacy download nl_core_news_md && \
+    rm -rf ~/.cache/pip
 
 # Copy application files
 COPY . .
@@ -21,6 +23,8 @@ COPY . .
 # Ensure the correct Python binary is used
 ENV PATH="/usr/local/bin:$PATH"
 
-# Deploy the ray serve application
-RUN ["ray", "start", "--head"]
-CMD ["ray", "deploy" "config.yaml"]
+# Expose ports for Ray Serve
+EXPOSE 8000 8265
+
+# Default command to run Ray Serve application
+CMD ["/bin/bash", "-c", "ray start --head --dashboard-host=0.0.0.0 && serve deploy config.yaml && tail -f /dev/null"]

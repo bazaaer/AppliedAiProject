@@ -3,8 +3,9 @@ from quart_cors import cors
 from quart_jwt_extended import JWTManager
 import os
 from config import ACCESS_EXPIRES, revoked_store
-from api import auth_blueprint, model_blueprint, users_bleuprint, api_keys_blueprint
+from api import auth_blueprint, model_blueprint, users_bleuprint, api_keys_blueprint, llm_blueprint
 from config import ADMIN_USERNAME, ADMIN_PASSWORD
+import aiohttp
 
 
 app = Quart(__name__, static_folder="static")
@@ -22,6 +23,7 @@ app.register_blueprint(auth_blueprint)
 app.register_blueprint(model_blueprint)
 app.register_blueprint(users_bleuprint)
 app.register_blueprint(api_keys_blueprint)
+app.register_blueprint(llm_blueprint)
 
 @jwt.token_in_blacklist_loader
 def check_if_token_is_revoked(decrypted_token):
@@ -43,6 +45,15 @@ async def startup():
     from db import create_indexes
     await create_indexes()
 
+@app.before_serving
+async def create_session():
+    app.aiohttp_session = aiohttp.ClientSession()
+
+@app.after_serving
+async def close_session():
+    await app.aiohttp_session.close()
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=5000)
+    

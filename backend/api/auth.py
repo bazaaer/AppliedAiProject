@@ -50,7 +50,7 @@ async def login():
         user_claims=user_claims
     )
 
-    return jsonify({'api_key': api_token, "role": role}), 200
+    return jsonify({'token': api_token, "role": role}), 200
 
 @auth_blueprint.route("/api/logout", methods=["POST"])
 @jwt_role_required(["admin", "user"])

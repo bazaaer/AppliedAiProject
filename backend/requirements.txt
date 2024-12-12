@@ -19,3 +19,5 @@ uvicorn==0.32.0
 bs4
 uvloop
 ollama
+pytz
+aiohttp

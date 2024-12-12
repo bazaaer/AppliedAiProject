@@ -4,11 +4,17 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend.yml'
     paths-ignore:
       - 'backend/checket/**'
+      - 'frontend/**'
+      - 'research/**'
+      - 'docker-compose.yml'
+      - 'README.md'
+      - '.gitignore'
+      - '.github/workflows/frontend.yml'
+      - '.github/workflows/model.yml'
+      - '.git/**'
+      - '.devcontainer/**'
 
 jobs:
   build-and-push:
