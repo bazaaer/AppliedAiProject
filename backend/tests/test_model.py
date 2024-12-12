@@ -8,8 +8,8 @@ from deepeval import assert_test
 from deepeval.metrics import AnswerRelevancyMetric, GEval
 from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 
-SCHRIJFASSISTENT_MODELFILE = "../checket/Modelfile_schrijfassistent"
-STIJLASSISTENT_MODELFILE = "../checket/Modelfile_stijlassistent"
+SCHRIJFASSISTENT_MODELFILE = "../llm/Modelfile_schrijfassistent"
+STIJLASSISTENT_MODELFILE = "../llm/Modelfile_stijlassistent"
 HOST = "http://localhost:11435"
 
 
