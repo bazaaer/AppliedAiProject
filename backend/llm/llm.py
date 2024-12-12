@@ -111,51 +111,44 @@ def process_text_after_rewriting(input_text: str) -> str:
     return clean_and_normalize_text(input_text)
 
 
-async def write_sentence(session: aiohttp.ClientSession, host: str, sentence: str) -> str:
-    """
-    Generates responses using the LLM client with text cleaning and normalization.
+async def write_sentence(
+    session: aiohttp.ClientSession, 
+    host: str, 
+    text: str, 
+    user_prompt: str = None
+) -> str:
+    # Preprocess the text
+    text = process_text_before_rewriting(text)
 
-    Args:
-        session (aiohttp.ClientSession): The shared aiohttp session for HTTP requests.
-        host (str): The base URL for the Ollama client.
-        sentence (str): The input sentence.
+    # Construct the prompt with optional user instruction
+    prompt = f"{user_prompt}:\n\n{text}" if user_prompt else text
 
-    Returns:
-        str: The final processed and normalized output.
-    """
-    sentence = process_text_before_rewriting(sentence)
+    async def fetch_response(model: str, prompt: str) -> str:
+        """Helper function to call the API and process the NDJSON response."""
+        async with session.post(
+            f"{host}/api/generate",
+            json={"model": model, "prompt": prompt}
+        ) as response:
+            if response.status != 200:
+                raise ValueError(f"Failed to call '{model}': {response.status}")
 
-    # Send the first request to "schrijfassistent"
-    async with session.post(
-        f"{host}/api/generate",
-        json={"model": "schrijfassistent", "prompt": sentence}
-    ) as response:
-        if response.status != 200:
-            raise ValueError(f"Failed to call 'schrijfassistent': {response.status}")
-        
-        # Read the NDJSON response line by line
-        rewritten_response = ""
-        async for line in response.content:
-            line = line.decode('utf-8').strip()
-            if line:  # Avoid empty lines
-                data = json.loads(line)
-                rewritten_response += data.get("response", "")
+            result = ""
+            async for line in response.content:
+                line = line.decode('utf-8').strip()
+                if line:
+                    try:
+                        data = json.loads(line)
+                        result += data.get("response", "")
+                    except json.JSONDecodeError as e:
+                        raise ValueError(f"Invalid JSON from {model}: {line}. Error: {e}")
+            return result
 
-    # Send the second request to "stijlassistent"
-    async with session.post(
-        f"{host}/api/generate",
-        json={"model": "stijlassistent", "prompt": rewritten_response}
-    ) as response:
-        if response.status != 200:
-            raise ValueError(f"Failed to call 'stijlassistent': {response.status}")
+    # Process with the first model
+    rewritten_response = await fetch_response("schrijfassistent", prompt)
 
-        # Read the NDJSON response line by line
-        styled_response = ""
-        async for line in response.content:
-            line = line.decode('utf-8').strip()
-            if line:  # Avoid empty lines
-                data = json.loads(line)
-                styled_response += data.get("response", "")
+    # Process with the second model
+    styled_response = await fetch_response("stijlassistent", rewritten_response)
 
+    # Postprocess the styled text
     output = process_text_after_rewriting(styled_response)
     return output
