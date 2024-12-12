@@ -46,7 +46,7 @@ export function Navbar({ bodyRef }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
-  const { isLoggedIn, logout } = useAuth(); // Use AuthContext to get the login status and logout function
+  const { isLoggedIn, logout } = useAuth();
 
   const handleOpen = () => setOpen((cur) => !cur);
 

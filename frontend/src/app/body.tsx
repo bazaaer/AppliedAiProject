@@ -7,17 +7,21 @@ import {
   Tab,
   TabPanel,
 } from "@material-tailwind/react";
+import { useAuth } from "@/context/authContext";
 
 export const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
+  const { isLoggedIn } = useAuth();
+
+  // Define the tabs and conditionally include the 'Admin' tab
   const labeldata = [
     { label: "About", value: "about", content: <About /> },
-    { label: "Admin", value: "admin", content: <UserMan /> },
+    ...(isLoggedIn ? [{ label: "Admin", value: "admin", content: <UserMan /> }] : []),
   ];
 
   return (
     <section ref={ref} className="grid h-auto gap-8 place-items-center p-8">
       <Tabs
-        value="about"
+        value="about" // Default tab
         className="mx-auto max-w-7xl w-full mb-2"
       >
         <div className="w-full flex mb-1 flex-col items-center">
