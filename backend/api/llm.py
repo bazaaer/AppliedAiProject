@@ -17,7 +17,6 @@ async def initialize_models():
     Preload models on Ollama using the shared aiohttp.ClientSession.
     """
     try:
-        print("Initializing models...")
         async with current_app.aiohttp_session.post(
             f"{HOST}/api/create",
             json={

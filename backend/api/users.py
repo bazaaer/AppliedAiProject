@@ -23,8 +23,6 @@ async def insert_admin_user(admin_username: str, admin_password: str):
         )
         if result is None:
             print("Admin user created.")
-        else:
-            print("Admin user already exists, skipping creation.")
     except DuplicateKeyError:
         print("Admin user already exists.")
     except Exception as e:
