@@ -1,6 +1,7 @@
+from typing import Optional
+
 import torch
 from sentence_transformers import SentenceTransformer
-from typing import Optional
 
 
 class SimilarityEvaluator:
@@ -21,6 +22,7 @@ class SimilarityEvaluator:
         topk_mean_similarity_score(sentence: str, k: int = 5) -> float:
             Calculates the mean similarity score of the top-k similar embeddings to the input sentence.
     """
+
     def __init__(self, base_embeddings_path: str, device: Optional[str] = None):
         """
         Initializes the SimilarityEvaluator with precomputed embeddings and a SentenceTransformer model.
@@ -30,11 +32,16 @@ class SimilarityEvaluator:
             device (Optional[str], optional): Device to run the computations ('cuda' or 'cpu').
                                               If not provided, defaults to 'cuda' if available.
         """
-        self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = (
+            device if device else ("cuda" if torch.cuda.is_available() else "cpu")
+        )
 
-        self.model = SentenceTransformer("ODeNy/ChecketV2", device=device)
+        self.model = SentenceTransformer("ODeNy/ChecketV2", device=self.device)
+        # This gives a warning don't worry it's just something to do with the model's readme, idk what
 
-        self.base_embeddings = torch.load(base_embeddings_path, weights_only=True).to(self.device)
+        self.base_embeddings = torch.load(base_embeddings_path, weights_only=True).to(
+            self.device
+        )
 
     def topk_mean_similarity_score(self, sentence: str, k: int = 5) -> float:
         """
@@ -47,13 +54,18 @@ class SimilarityEvaluator:
         Returns:
             float: The mean similarity score of the top-k similar embeddings.
         """
-        embedding = self.model.encode(sentence, convert_to_tensor=True, device=self.device)
+        embedding = self.model.encode(
+            sentence, convert_to_tensor=True, device=self.device
+        )
 
-        similarities = self.model.similarity(embedding.unsqueeze(0), self.base_embeddings)
+        similarities = self.model.similarity(
+            embedding.unsqueeze(0), self.base_embeddings
+        )
 
         mean_topk_score = torch.topk(similarities, k).values.mean().item()
 
         return mean_topk_score
+
 
 # Usage
 if __name__ == "__main__":
@@ -63,6 +75,6 @@ if __name__ == "__main__":
 
     sentence = """Sinterklaas arriveert aan het stadhuis rond 14.45 uur en zal daar, vanop het balkon aan het Schoon Verdiep, de kinderen en hun mama’s en papa’s toespreken."""
 
-    score = similarity_evaluator.topk_mean_similarity_score(sentence,k=8)
+    score = similarity_evaluator.topk_mean_similarity_score(sentence, k=8)
 
     print(f"Sentence: {sentence}\nTop-K Mean Similarity Score: {score:.3f}")

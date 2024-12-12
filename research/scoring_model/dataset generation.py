@@ -1,75 +1,105 @@
-import pandas as pd
 import re
-import ollama
 import traceback
 
+import ollama
+import pandas as pd
+
+
 def clean_and_process_text(input_text):
-    url_pattern = re.compile(r'\b(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+(?:\.[a-zA-Z]{2,}))\b')
-    time_pattern = re.compile(r'\b(\d{1,2}):(\d{2})\s*uur\b')
-    alphanumeric_pattern = re.compile(r"""[^\w\s&@.,!?:;()\[\]'\"\u00C0-\u00FF\u0100-\u017F\u20A0-\u20CF\u20B9]""")
+    url_pattern = re.compile(
+        r"\b(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+(?:\.[a-zA-Z]{2,}))\b"
+    )
+    time_pattern = re.compile(r"\b(\d{1,2}):(\d{2})\s*uur\b")
+    alphanumeric_pattern = re.compile(
+        r"""[^\w\s&@.,!?:;()\[\]'\"\u00C0-\u00FF\u0100-\u017F\u20A0-\u20CF\u20B9]"""
+    )
 
     def replace_url(match):
         domain = match.group(1)
-        return f"www.{domain}" if not match.group(0).startswith('www.') else domain
+        return f"www.{domain}" if not match.group(0).startswith("www.") else domain
 
     def replace_time(match):
-        return match.group(0).replace(':', '.')
+        return match.group(0).replace(":", ".")
 
     def process_text(text):
         text = url_pattern.sub(replace_url, text)
         text = time_pattern.sub(replace_time, text)
-        return alphanumeric_pattern.sub('', text)
+        return alphanumeric_pattern.sub("", text)
 
     return process_text(input_text)
 
-def save_df_to_csv(df, filename='training.csv'):
+
+def save_df_to_csv(df, filename="training.csv"):
     df.to_csv(filename, index=False)
 
+
 def main():
-    df = pd.read_csv('important_sentences.csv', index_col=0)
-    df.index.name = 'index'
-    df.rename(columns={'sentence': 'sentence1'}, inplace=True)
+    df = pd.read_csv("important_sentences.csv", index_col=0)
+    df.index.name = "index"
+    df.rename(columns={"sentence": "sentence1"}, inplace=True)
     df = df.sample(n=len(df) // 2, random_state=42)
 
     processed_data = []
-    counter = 0  # Initialize a counter to keep track of the number of processed sentences
+    counter = (
+        0  # Initialize a counter to keep track of the number of processed sentences
+    )
 
     try:
         for idx, row in df.iterrows():
-            original_sentence = row['sentence1']
+            original_sentence = row["sentence1"]
 
             # Good version
-            rewritten_response_good = ollama.generate(model='schrijfassistent_goed', prompt=original_sentence)
-            style_response_good = ollama.generate(model='stijlassistent_goed', prompt=rewritten_response_good['response'])
-            final_output_good = clean_and_process_text(style_response_good['response'])
+            rewritten_response_good = ollama.generate(
+                model="schrijfassistent_goed", prompt=original_sentence
+            )
+            style_response_good = ollama.generate(
+                model="stijlassistent_goed", prompt=rewritten_response_good["response"]
+            )
+            final_output_good = clean_and_process_text(style_response_good["response"])
 
-            processed_data.append({
-                'sentence1': original_sentence,
-                'sentence2': final_output_good,
-                'score': 1.0
-            })
+            processed_data.append(
+                {
+                    "sentence1": original_sentence,
+                    "sentence2": final_output_good,
+                    "score": 1.0,
+                }
+            )
 
             # Half version (loosely follows instructions without regex cleaning)
-            rewritten_response_half = ollama.generate(model='schrijfassistent_half', prompt=original_sentence)
-            style_response_half = ollama.generate(model='stijlassistent_half', prompt=rewritten_response_half['response'])
-            final_output_half = style_response_half['response']  # No regex cleaning for half version
+            rewritten_response_half = ollama.generate(
+                model="schrijfassistent_half", prompt=original_sentence
+            )
+            style_response_half = ollama.generate(
+                model="stijlassistent_half", prompt=rewritten_response_half["response"]
+            )
+            final_output_half = style_response_half[
+                "response"
+            ]  # No regex cleaning for half version
 
-            processed_data.append({
-                'sentence1': original_sentence,
-                'sentence2': final_output_half,
-                'score': 0.5
-            })
+            processed_data.append(
+                {
+                    "sentence1": original_sentence,
+                    "sentence2": final_output_half,
+                    "score": 0.5,
+                }
+            )
 
             # Bad version
-            rewritten_response_bad = ollama.generate(model='schrijfassistent_slecht', prompt=original_sentence)
-            style_response_bad = ollama.generate(model='stijlassistent_slecht', prompt=rewritten_response_bad['response'])
-            final_output_bad = style_response_bad['response']
+            rewritten_response_bad = ollama.generate(
+                model="schrijfassistent_slecht", prompt=original_sentence
+            )
+            style_response_bad = ollama.generate(
+                model="stijlassistent_slecht", prompt=rewritten_response_bad["response"]
+            )
+            final_output_bad = style_response_bad["response"]
 
-            processed_data.append({
-                'sentence1': original_sentence,
-                'sentence2': final_output_bad,
-                'score': 0.0
-            })
+            processed_data.append(
+                {
+                    "sentence1": original_sentence,
+                    "sentence2": final_output_bad,
+                    "score": 0.0,
+                }
+            )
 
             # Increment counter and print update every 300 entries
             counter += 1
@@ -82,9 +112,10 @@ def main():
     except Exception as e:
         print(f"An error occurred: {e}")
         traceback.print_exc()  # This prints the full traceback, which is helpful for debugging
-        if 'processed_df' in locals():
+        if "processed_df" in locals():
             processed_df = pd.DataFrame(processed_data)
             save_df_to_csv(processed_df)
+
 
 # Entry point of the script
 if __name__ == "__main__":
@@ -135,13 +166,13 @@ if __name__ == "__main__":
     SYSTEM Pas elke ontvangen zin aan. Houd het aantal woorden altijd verschillend van de oorspronkelijke zin. Voeg "www" als prefix toe aan websites. Vermijd hoofdletters bij woorden zoals "stad", "stadsdeel" en "district". Schrijf alle afdelingen en diensten binnen de stad met hoofdletters, inclusief lidwoorden en voegwoorden. Gebruik "we" nooit in communicatie vanuit de redactie en spreek in derde persoon voor meer afstand. Gebruik dubbele aanhalingstekens voor citaten. Schrijf woorden uit andere talen alleen met cursivering. Gebruik de 24-uursnotatie. Schrijf getallen als cijfers zonder komma's voor duizendtallen en gebruik "euro" voluit als symbool. Noem altijd de dag van de week bij data en maak de tekst compacter zonder extra spaties bij plaatsgebrek.
     """
 
-    ollama.create(model='schrijfassistent_goed', modelfile=schrijfassistent_goed)
-    ollama.create(model='stijlassistent_goed', modelfile=stijlassistent_goed)
+    ollama.create(model="schrijfassistent_goed", modelfile=schrijfassistent_goed)
+    ollama.create(model="stijlassistent_goed", modelfile=stijlassistent_goed)
 
-    ollama.create(model='schrijfassistent_half', modelfile=schrijfassistent_half)
-    ollama.create(model='stijlassistent_half', modelfile=stijlassistent_half)
+    ollama.create(model="schrijfassistent_half", modelfile=schrijfassistent_half)
+    ollama.create(model="stijlassistent_half", modelfile=stijlassistent_half)
 
-    ollama.create(model='schrijfassistent_slecht', modelfile=schrijfassistent_slecht)
-    ollama.create(model='stijlassistent_slecht', modelfile=stijlassistent_slecht)
+    ollama.create(model="schrijfassistent_slecht", modelfile=schrijfassistent_slecht)
+    ollama.create(model="stijlassistent_slecht", modelfile=stijlassistent_slecht)
 
     main()
