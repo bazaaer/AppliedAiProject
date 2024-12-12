@@ -44,5 +44,5 @@
 
     "remoteUser": "vscode",
 
-    "postCreateCommand": "pip install -r backend/requirements.txt; pip install -r backend/checket/requirements.txt; python3 -m spacy download nl_core_news_md"
+    "postCreateCommand": "pip install -r backend/requirements.txt; pip install -r backend/checket/requirements.txt; pip install -r backend/tests/requirements.txt; pip install \"ray[serve]\"; python3 -m spacy download nl_core_news_md"
 }

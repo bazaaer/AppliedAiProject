@@ -4,6 +4,7 @@ from quart_jwt_extended import JWTManager
 import os
 from config import ACCESS_EXPIRES, revoked_store
 from api import auth_blueprint, model_blueprint, users_bleuprint, api_keys_blueprint, llm_blueprint
+from api.llm import initialize_models
 from config import ADMIN_USERNAME, ADMIN_PASSWORD
 import aiohttp
 
@@ -47,7 +48,8 @@ async def startup():
 
 @app.before_serving
 async def create_session():
-    app.aiohttp_session = aiohttp.ClientSession()
+    app.aiohttp_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+    await initialize_models()
 
 @app.after_serving
 async def close_session():
