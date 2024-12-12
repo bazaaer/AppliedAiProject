@@ -1,6 +1,4 @@
-"use client";
-
-import React from "react";
+import React, { forwardRef } from "react";
 import { UserMan, About } from "@/components";
 import {
   Tabs,
@@ -10,14 +8,14 @@ import {
   TabPanel,
 } from "@material-tailwind/react";
 
-export function Body() {
+export const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
   const labeldata = [
     { label: "About", value: "about", content: <About /> },
     { label: "Admin", value: "admin", content: <UserMan /> },
   ];
 
   return (
-    <section className="grid h-auto gap-8 place-items-center p-8">
+    <section ref={ref} className="grid h-auto gap-8 place-items-center p-8">
       <Tabs
         value="about"
         className="mx-auto max-w-7xl w-full mb-2"
@@ -41,6 +39,6 @@ export function Body() {
       </Tabs>
     </section>
   );
-}
+});
 
 export default Body;

@@ -21,6 +21,10 @@ interface NavItemProps {
   href?: string;
 }
 
+interface NavbarProps {
+  bodyRef: React.RefObject<HTMLDivElement>;
+}
+
 function NavItem({ children, href }: NavItemProps) {
   return (
     <li>
@@ -38,7 +42,7 @@ function NavItem({ children, href }: NavItemProps) {
   );
 }
 
-export function Navbar() {
+export function Navbar({ bodyRef }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
@@ -54,6 +58,10 @@ export function Navbar() {
     logout();
   };
 
+  const handleLogoClick = () => {
+    bodyRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   React.useEffect(() => {
     window.addEventListener(
       "resize",
@@ -67,10 +75,9 @@ export function Navbar() {
         <div className="container mx-auto flex items-center justify-between">
           <Typography
             as="a"
-            href="https://www.material-tailwind.com"
-            target="_blank"
+            onClick={handleLogoClick} // Handle logo click to scroll to Body
             color="blue-gray"
-            className="text-lg font-bold text-[#fd5f22]"
+            className="text-lg font-bold text-[#fd5f22] cursor-pointer"
           >
             Klopta
           </Typography>
