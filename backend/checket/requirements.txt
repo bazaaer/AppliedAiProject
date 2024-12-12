@@ -5,3 +5,4 @@ torch==2.5.1
 sentence-transformers==3.3.0
 pytz==2024.2
 cupy-cuda12x==13.3.0
+starlette
