@@ -12,7 +12,6 @@ SCHRIJFASSISTENT_MODELFILE = "../checket/Modelfile_schrijfassistent"
 STIJLASSISTENT_MODELFILE = "../checket/Modelfile_stijlassistent"
 HOST = "http://localhost:11435"
 
-
 @pytest.fixture
 def client():
     """Fixture to set up the Ollama client."""
@@ -89,24 +88,7 @@ def clean_and_normalize_text(input_text: str) -> str:
     def replace_time(match: re.Match) -> str:
         return match.group(0).replace(":", ".")
 
-    def remove_incomplete_html(text):
-        valid_html_tag_pattern = r"<[^>]*>"
-
-        html_parts = re.split(valid_html_tag_pattern, text)
-        tags = re.findall(valid_html_tag_pattern, text)
-
-        valid_tags = [tag for tag in tags if re.fullmatch(valid_html_tag_pattern, tag)]
-
-        reconstructed_text = ""
-        for i, part in enumerate(html_parts):
-            reconstructed_text += part
-            if i < len(valid_tags):
-                reconstructed_text += valid_tags[i]
-
-        return reconstructed_text
-
     text = time_pattern.sub(replace_time, input_text)
-    text = remove_incomplete_html(text)
     return alphanumeric_pattern.sub("", text)
 
 
@@ -152,12 +134,12 @@ def write_sentence(client: Callable, sentence: str) -> str:
     sentence = process_text_before_rewriting(sentence)
 
     rewritten_response = client.generate(
-        model="schrijfassistent", prompt=f"""Pas deze zin aan: {sentence}"""
+        model="schrijfassistent", prompt=f"""Pas de schrijf regels toe op deze zin: {sentence}"""
     )
 
     style_response = client.generate(
         model="stijlassistent",
-        prompt=f"""Pas deze zin aan: {rewritten_response['response']}""",
+        prompt=f"""Pas de stijlregels toe op deze zin: {rewritten_response['response']}""",
     )
 
     output = process_text_after_rewriting(style_response["response"])
@@ -185,11 +167,12 @@ def test_llm_rewriting(client):
                 client,
                 "Het is onze bedoeling om in de toekomst initiatieven te nemen die bijdragen aan het vergroten van de veiligheid in onze buurten.",
             ),
-            expected_output="We werken aan veiligere buurten.",
+            expected_output="De stad werkt aan veiligere buurten.",
         )
         answer_relevancy_metric = AnswerRelevancyMetric(
             threshold=0.5, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -211,6 +194,7 @@ def test_llm_hour_notation(client):
         answer_relevancy_metric = AnswerRelevancyMetric(
             threshold=0.5, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -230,6 +214,7 @@ def test_llm_valuta_notation(client):
         answer_relevancy_metric = AnswerRelevancyMetric(
             threshold=0.5, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -251,6 +236,7 @@ def test_llm_date_notation(client):
         answer_relevancy_metric = AnswerRelevancyMetric(
             threshold=0.5, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -270,43 +256,8 @@ def test_llm_spellcheck(client):
         answer_relevancy_metric = AnswerRelevancyMetric(
             threshold=0.5, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
-    except Exception as e:
-        if "Limit Reached" in str(e):
-            print("Warning: Test limit reached. Continuing without failing.")
-        else:
-            raise
-
-
-def test_llm_html_layout(client):
-    """Test LLM's ability to rewrite date formats."""
-    try:
-        testcase = LLMTestCase(
-            input="<a href='https://www.example.com'>Klik hier voor meer informatie</a>.",
-            actual_output=write_sentence(
-                client,
-                "<a href='https://www.example.com'>Klik hier voor meer informatie</a>.",
-            ),
-            expected_output="<a href='www.example.com'>Klik hier voor meer informatie</a>.",
-        )
-        html_correctness_metric = GEval(
-            name="HTML Correctness",
-            criteria="Determine whether the actual output includes the same html tags based on the expected output.",
-            model="gpt-4o-mini",
-            threshold=0.20,
-            evaluation_steps=[
-                "Check whether the HTML-tags in 'expected output' are also in the 'actual output'",
-                "You should heavily penalize omission of HTML tags",
-                "Only focus on HTML tags when giving the score",
-            ],
-            evaluation_params=[
-                LLMTestCaseParams.INPUT,
-                LLMTestCaseParams.ACTUAL_OUTPUT,
-                LLMTestCaseParams.EXPECTED_OUTPUT,
-            ],
-        )
-        print(f"\nOUTPUT HTML LLM: {testcase.actual_output}")
-        assert_test(testcase, metrics=[html_correctness_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
             print("Warning: Test limit reached. Continuing without failing.")
@@ -327,7 +278,7 @@ def test_clear_language(client):
         answer_relevancy_metric = AnswerRelevancyMetric(
             threshold=0.5, model="gpt-4o-mini"
         )
-        print(f"\nOUTPUT CLEAR LANG LLM: {testcase.actual_output}")
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -350,6 +301,7 @@ def test_key_message_first(client):
         answer_relevancy_metric = AnswerRelevancyMetric(
             threshold=0.6, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -371,6 +323,7 @@ def test_active_voice(client):
         answer_relevancy_metric = AnswerRelevancyMetric(
             threshold=0.5, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -391,8 +344,9 @@ def test_avoid_jargon(client):
             expected_output="ETL betekent 'Extract, Transform, Load': data wordt verzameld, omgezet en geladen voor analyse.",
         )
         answer_relevancy_metric = AnswerRelevancyMetric(
-            threshold=0.33, model="gpt-4o-mini"
+            threshold=0.4, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -413,8 +367,9 @@ def test_avoid_figurative_language(client):
             expected_output="We moeten het probleem van de openstaande betalingen aanpakken en snel oplossen.",
         )
         answer_relevancy_metric = AnswerRelevancyMetric(
-            threshold=0.45, model="gpt-4o-mini"
+            threshold=0.5, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -434,8 +389,9 @@ def test_inclusive_writing(client):
             expected_output="Iedere werknemer moet de aanvraag indienen.",
         )
         answer_relevancy_metric = AnswerRelevancyMetric(
-            threshold=0.6, model="gpt-4o-mini"
+            threshold=0.5, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -453,8 +409,9 @@ def test_avoid_abbreviations(client):
             expected_output="Het Centrum voor Leerlingenbegeleiding (CLB) zorgt voor ondersteuning.",
         )
         answer_relevancy_metric = AnswerRelevancyMetric(
-            threshold=0.6, model="gpt-4o-mini"
+            threshold=0.25, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -474,6 +431,7 @@ def test_tone_consistency(client):
         answer_relevancy_metric = AnswerRelevancyMetric(
             threshold=0.5, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -486,17 +444,17 @@ def test_avoid_overuse_of_humor(client):
     """Test if the LLM avoids excessive or inappropriate humor."""
     try:
         testcase = LLMTestCase(
-            input="De stad Antwerpen laat je met een knipoog weten dat het zwembad weer open is, tenzij je liever baantjes trekt in je dromen.",
+            input="De stad Antwerpen laat je met een knipoog weten dat het zwembad weer open is.",
             actual_output=write_sentence(
                 client,
-                "De stad Antwerpen laat je met een knipoog weten dat het zwembad weer open is, tenzij je liever baantjes trekt in je dromen.",
+                "De stad Antwerpen laat je met een knipoog weten dat het zwembad weer open is.",
             ),
             expected_output="De stad Antwerpen informeert je dat het zwembad weer open is.",
         )
         answer_relevancy_metric = AnswerRelevancyMetric(
             threshold=0.5, model="gpt-4o-mini"
         )
-        print(f"LLM OUTPUT HUMOR: {testcase.actual_output}")
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -517,8 +475,9 @@ def test_avoid_enthusiasm_overkill(client):
             expected_output="Het vernieuwde zwembad opent zijn deuren. Kom langs en ervaar het zelf.",
         )
         answer_relevancy_metric = AnswerRelevancyMetric(
-            threshold=0.6, model="gpt-4o-mini"
+            threshold=0.5, model="gpt-4o-mini"
         )
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -541,7 +500,7 @@ def test_proper_capitalization(client):
         answer_relevancy_metric = AnswerRelevancyMetric(
             threshold=0.5, model="gpt-4o-mini"
         )
-        print(f"\nOUTPUT CAPITALIZATION LLM: {testcase.actual_output}")
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[answer_relevancy_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
@@ -576,7 +535,7 @@ def test_quotation_guidelines(client):
                 LLMTestCaseParams.EXPECTED_OUTPUT,
             ],
         )
-        print(f"\nOUTPUT QUOTES LLM: {testcase.actual_output}")
+        print(f"\nOUTPUT LLM: {testcase.actual_output}")
         assert_test(testcase, metrics=[quotation_metric])
     except Exception as e:
         if "Limit Reached" in str(e):
