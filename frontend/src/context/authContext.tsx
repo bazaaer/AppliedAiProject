@@ -4,48 +4,57 @@ import React, { createContext, useState, useContext, ReactNode, useEffect } from
 
 // Define types for the AuthContext
 interface AuthContextType {
-  token: string | null;
+  apiKey: string | null;
   role: string | null;
-  setToken: (token: string | null) => void;
+  setApiKey: (apiKey: string | null) => void;
   setRole: (role: string | null) => void;
+  logout: () => void; // New logout method
 }
 
 // Create AuthContext
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // AuthProvider to wrap the app and provide context values
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
 
-  // Effect to load token from localStorage if available
+  // Effect to load apiKey from localStorage if available
   useEffect(() => {
-    const savedToken = localStorage.getItem('api_key');
+    const savedApiKey = localStorage.getItem('apiKey');
     const savedRole = localStorage.getItem('role');
-    if (savedToken) {
-      setToken(savedToken);
+    if (savedApiKey) {
+      setApiKey(savedApiKey);
     }
     if (savedRole) {
       setRole(savedRole);
     }
   }, []);
 
-  // Save token and role in localStorage whenever they change
+  // Save apiKey and role in localStorage whenever they change
   useEffect(() => {
-    if (token) {
-      localStorage.setItem('api_key', token);
+    if (apiKey) {
+      localStorage.setItem('apiKey', apiKey);
     } else {
-      localStorage.removeItem('api_key');
+      localStorage.removeItem('apiKey');
     }
     if (role) {
       localStorage.setItem('role', role);
     } else {
       localStorage.removeItem('role');
     }
-  }, [token, role]);
+  }, [apiKey, role]);
+
+  // Logout method to clear apiKey and role
+  const logout = () => {
+    setApiKey(null);
+    setRole(null);
+    localStorage.removeItem('apiKey');
+    localStorage.removeItem('role');
+  };
 
   return (
-    <AuthContext.Provider value={{ token, role, setToken, setRole }}>
+    <AuthContext.Provider value={{ apiKey, role, setApiKey, setRole, logout }}>
       {children}
     </AuthContext.Provider>
   );

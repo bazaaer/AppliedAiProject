@@ -5,8 +5,8 @@ import icon from '../Icon_3.svg'
 export default class testPlugin extends Plugin {
     init() {
         const editor = this.editor;
+        const apiKey = editor.config.get('apiKey');
 
-        const apiKey = editor.config.get('testPluginConfig.apiKey');
         if (!apiKey) {
             console.warn('No API key provided for testPlugin.');
         }
@@ -31,7 +31,6 @@ export default class testPlugin extends Plugin {
     _Replacetext(apikey) {
         const editor = this.editor;
         const editorElement = this.editor.ui.view.element;
-
 
         let previewText = editor.getData();
         previewText = this._sendTextToApi(previewText,apikey)
