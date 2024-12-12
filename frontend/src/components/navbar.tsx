@@ -1,18 +1,8 @@
 import React, { useState } from "react";
-import {
-  Navbar as MTNavbar,
-  Collapse,
-  Button,
-  IconButton,
-  Typography,
-} from "@material-tailwind/react";
-import {
-  UserCircleIcon,
-  CommandLineIcon,
-  XMarkIcon,
-  Bars3Icon,
-} from "@heroicons/react/24/solid";
+import { Navbar as MTNavbar, Collapse, Button, IconButton, Typography } from "@material-tailwind/react";
+import { UserCircleIcon, CommandLineIcon, XMarkIcon, Bars3Icon } from "@heroicons/react/24/solid";
 import Login from "./login";
+import { useAuth } from "@/context/authContext";
 
 const NAV_MENU = [
   {
@@ -52,11 +42,17 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
+  const { isLoggedIn, logout } = useAuth(); // Use AuthContext to get the login status and logout function
+
   const handleOpen = () => setOpen((cur) => !cur);
 
   const handleOpenLogin = () => setIsLoginOpen(true);
 
   const handleCloseLogin = () => setIsLoginOpen(false);
+
+  const handleLogout = () => {
+    logout();
+  };
 
   React.useEffect(() => {
     window.addEventListener(
@@ -87,8 +83,8 @@ export function Navbar() {
             ))}
           </ul>
           <div className="hidden items-center gap-2 lg:flex">
-            <Button color="gray" onClick={handleOpenLogin}>
-              Log In
+            <Button color="gray" onClick={isLoggedIn ? handleLogout : handleOpenLogin}>
+              {isLoggedIn ? "Log Out" : "Log In"}
             </Button>
           </div>
           <IconButton
@@ -115,8 +111,8 @@ export function Navbar() {
               ))}
             </ul>
             <div className="mt-6 mb-4 flex items-center gap-2">
-              <Button variant="text" onClick={handleOpenLogin}>
-                Log In
+              <Button color="gray" onClick={isLoggedIn ? handleLogout : handleOpenLogin}>
+                {isLoggedIn ? "Log Out" : "Log In"}
               </Button>
             </div>
           </div>

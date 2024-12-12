@@ -35,29 +35,14 @@ export function Footer() {
 
         <div className="flex flex-col md:flex-row items-center !justify-between">
           <Typography
-            as="a"
-            href="https://www.material-tailwind.com"
-            target="_blank"
-            variant="h6"
-            className="text-gray-900 text-xs"
+            color="blue-gray"
+            className="text-center !text-gray-700"
           >
-            Material Tailwind
+            &copy; {CURRENT_YEAR} Made with{" "}
+            <a href="https://www.material-tailwind.com" target="_blank">
+              Material Tailwind
+            </a>{" "}
           </Typography>
-          <ul className="flex justify-center my-4 md:my-0 w-max mx-auto items-center gap-4">
-            {LINKS.map((link, index) => (
-              <li key={index}>
-                <Typography
-                  as="a"
-                  href={link.href}
-                  variant="small"
-                  color="white"
-                  className="font-normal !text-gray-700 hover:!text-gray-900 transition-colors"
-                >
-                  {link.name}
-                </Typography>
-              </li>
-            ))}
-          </ul>
           <div className="flex w-fit justify-center gap-2">
             <IconButton size="sm" color="gray" variant="text">
               <a href="https://github.com/bazaaer/AppliedAiProject">
@@ -66,15 +51,21 @@ export function Footer() {
             </IconButton>
           </div>
         </div>
-        <Typography
-          color="blue-gray"
-          className="text-center mt-12 font-normal !text-gray-700"
-        >
-          &copy; {CURRENT_YEAR} Made with{" "}
-          <a href="https://www.material-tailwind.com" target="_blank">
-            Material Tailwind
-          </a>{" "}
-        </Typography>
+        <ul className="font-normal flex justify-center mt-12 my-4 md:my-0 w-max mx-auto items-center gap-4">
+          {LINKS.map((link, index) => (
+            <li key={index}>
+              <Typography
+                as="a"
+                href={link.href}
+                variant="small"
+                color="white"
+                className="font-normal !text-gray-700 hover:!text-gray-900 transition-colors"
+              >
+                {link.name}
+              </Typography>
+            </li>
+          ))}
+        </ul>
       </div>
     </footer>
   );
