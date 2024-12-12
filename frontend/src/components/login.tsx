@@ -13,7 +13,7 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   
-  const { setToken, setRole } = useAuth();  // Access context methods to set token and role
+  const { setApiKey, setRole } = useAuth();  // Access context methods to set token and role
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +39,7 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
         console.log("Login success:", data);  // Log the successful response
 
         // Store the API key (token) and role in the context
-        setToken(data.apiKey);  // Store the apiKey as token
+        setApiKey(data.token);  // Store the token as apiKey
         setRole(data.role);      // Store the role (if necessary)
 
         // Close the login popup and notify the app about successful login

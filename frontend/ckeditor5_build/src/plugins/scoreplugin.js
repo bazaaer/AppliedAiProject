@@ -5,8 +5,8 @@ import icon from '../Icon_3.svg'
 export default class scorePlugin extends Plugin {
     init() {
         const editor = this.editor;
-
-        const apiKey = editor.config.get('scorePluginConfig.apiKey');
+        const apiKey = editor.config.get('apiKey');
+        
         if (!apiKey) {
             console.warn('No API key provided for scorePlugin.');
         }
@@ -139,7 +139,7 @@ export default class scorePlugin extends Plugin {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
-                'Authorization':`Bearer ${apikey}`,
+                'Authorization':`Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
 
             },

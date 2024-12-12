@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Editor from "@ckeditor/ckeditor5-build-classic";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import { AuthContext } from "@/context/authContext"; // Assuming AuthContext is available
@@ -18,9 +18,15 @@ const CKEditorComponent: React.FC = () => {
     console.log("Sentences:", sentences);
   };
 
+  useEffect(() => {
+    console.log("apiKey has changed, CKEditor will reinitialize.");
+    console.log(apiKey);
+  }, [apiKey]); // Re-run the effect whenever the apiKey changes
+
   return (
     <div>
       <CKEditor
+        key={apiKey} // Using apiKey as the key prop will remount the editor when it changes
         editor={Editor}
         data=""
         config={{
