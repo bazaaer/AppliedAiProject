@@ -5,13 +5,13 @@ import { Navbar, Footer } from "@/components";
 import React from "react";
 
 // sections
-import Demo from "./demo";
-import Body from "./body";
+import Demo from "../components/demo";
+import Body from "../components/body";
 
 // context
 import { AuthProvider } from "@/context/authContext";
 
-export default function Campaign() {
+export default function Page() {
   const bodyRef = React.useRef<HTMLDivElement | null>(null);
 
   return (
