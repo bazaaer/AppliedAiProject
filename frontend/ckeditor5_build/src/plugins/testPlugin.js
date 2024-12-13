@@ -5,8 +5,8 @@ import icon from '../Icon_3.svg'
 export default class testPlugin extends Plugin {
     init() {
         const editor = this.editor;
+        const apiKey = editor.config.get('apiKey');
 
-        const apiKey = editor.config.get('testPluginConfig.apiKey');
         if (!apiKey) {
             console.warn('No API key provided for testPlugin.');
         }
@@ -21,20 +21,19 @@ export default class testPlugin extends Plugin {
                 tooltip: true
             });
             view.on('execute', () => {
-                this._Replacetext(apikey);
+                this._Replacetext(apiKey);
             });
 
             return view;
             });
     }
     //vervangt tekst en laat scores zien
-    _Replacetext(apikey) {
+    _Replacetext(apiKey) {
         const editor = this.editor;
         const editorElement = this.editor.ui.view.element;
 
-
         let previewText = editor.getData();
-        previewText = this._sendTextToApi(previewText,apikey)
+        previewText = this._sendTextToApi(previewText,apiKey)
         console.log(previewText)
 
         editor.setData(previewText);
@@ -46,15 +45,15 @@ export default class testPlugin extends Plugin {
         editorElement.appendChild(Div);
     }
     //haal verbeterde tekst van api op
-    async _sendTextToApi(text,apikey) { // https://klopta.vinnievirtuoso.online/api/docs/index.html https://klopta.vinnievirtuoso.online/api/rewrite
+    async _sendTextToApi(text,apiKey) { // https://klopta.vinnievirtuoso.online/api/docs/index.html https://klopta.vinnievirtuoso.online/api/rewrite
         const requestData = {
             text: text
           };
-        const response = await fetch('https://klopta.vinnievirtuoso.online/api/texts/rewrite', {
+        const response = await fetch('https://klopta.vinnievirtuoso.online/api/model/rewrite', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
-                'Authorization':`Bearer ${apikey}` ,
+                'Authorization':`Bearer ${apiKey}` ,
                 'Content-Type': 'application/json'
 
             },

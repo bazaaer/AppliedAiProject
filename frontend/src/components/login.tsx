@@ -13,7 +13,7 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   
-  const { setToken, setRole } = useAuth();  // Access context methods to set token and role
+  const { setApiKey, setRole } = useAuth();  // Access context methods to set token and role
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,14 +32,14 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
       });
 
       // Debugging: Log the response status
-      console.log("Response status:", response.status);
+      console.log("Response status:", response.status); //test
 
       if (response.ok) {
         const data = await response.json();
         console.log("Login success:", data);  // Log the successful response
 
         // Store the API key (token) and role in the context
-        setToken(data.api_key);  // Store the api_key as token
+        setApiKey(data.token);  // Store the token as apiKey
         setRole(data.role);      // Store the role (if necessary)
 
         // Close the login popup and notify the app about successful login
@@ -49,10 +49,10 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
         console.log("Error response:", response);
         try {
           const errorData = await response.json();
-          console.log("Error data:", errorData);
+          console.log("Error data:", errorData); //test
           setErrorMessage(errorData.message || "Login failed. Please try again.");
         } catch (parseError) {
-          console.log("Error parsing response:", parseError);
+          console.log("Error parsing response:", parseError); //test
           setErrorMessage("Login failed. An unknown error occurred.");
         }
       }
