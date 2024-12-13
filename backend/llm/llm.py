@@ -1,14 +1,5 @@
 import re
 from datetime import datetime
-import aiohttp
-import json
-
-import ollama
-
-def client(host):
-    """Fixture to set up the Ollama client."""
-    return ollama.Client(host=host)
-
 
 def read_file_contents(filepath):
     """Helper function to read and return the contents of a file."""
@@ -111,44 +102,3 @@ def process_text_after_rewriting(input_text: str) -> str:
     return clean_and_normalize_text(input_text)
 
 
-async def write_sentence(
-    session: aiohttp.ClientSession, 
-    host: str, 
-    text: str, 
-    user_prompt: str = None
-) -> str:
-    # Preprocess the text
-    text = process_text_before_rewriting(text)
-
-    # Construct the prompt with optional user instruction
-    prompt = f"{user_prompt}:\n\n{text}" if user_prompt else text
-
-    async def fetch_response(model: str, prompt: str) -> str:
-        """Helper function to call the API and process the NDJSON response."""
-        async with session.post(
-            f"{host}/api/generate",
-            json={"model": model, "prompt": prompt}
-        ) as response:
-            if response.status != 200:
-                raise ValueError(f"Failed to call '{model}': {response.status}")
-
-            result = ""
-            async for line in response.content:
-                line = line.decode('utf-8').strip()
-                if line:
-                    try:
-                        data = json.loads(line)
-                        result += data.get("response", "")
-                    except json.JSONDecodeError as e:
-                        raise ValueError(f"Invalid JSON from {model}: {line}. Error: {e}")
-            return result
-
-    # Process with the first model
-    rewritten_response = await fetch_response("schrijfassistent", prompt)
-
-    # Process with the second model
-    styled_response = await fetch_response("stijlassistent", rewritten_response)
-
-    # Postprocess the styled text
-    output = process_text_after_rewriting(styled_response)
-    return output
