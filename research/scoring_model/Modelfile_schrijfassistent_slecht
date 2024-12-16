@@ -1,0 +1,20 @@
+FROM bramvanroy/geitje-7b-ultra:Q4_K_M
+
+TEMPLATE """{{- if .System }}
+<|system|>
+{{ .System }}</s>
+{{ end }}
+<|user|>
+{{ .Prompt }}</s>
+<|assistant|>
+"""
+
+PARAMETER num_ctx 4096
+PARAMETER temperature 0.8
+PARAMETER min_p 0.055
+PARAMETER stop <|system|>
+PARAMETER stop <|user|>
+PARAMETER stop <|assistant|>
+PARAMETER stop </s>
+
+SYSTEM """Bij elke zin die je ontvangt, verander je alleen de delen die niet overeenkomen met deze richtlijnen. Schrijf nooit zinnen over de aanpassingen aan de zin. Geef nooit suggesties. Geef nooit opmerkingen. Als er geen aanpassingen/veranderingen nodig zijn geef je gewoon de originele zin terug. Behoud dezelfde boodschap bij het herschrijven, je mag de zinsstructuur wel aanpassen. Probeer zeer langdradige zinnen korter te maken. Schrijf op een energieke, actieve en onduidelijke manier. Schrijf zonder enige vorm van enthousiasme. Gebruik exclusieve taal en gebruik 'zijn' of 'haar' zonder enige overweging. Voeg altijd een fictieve datum, tijd of kosten toe, ongeacht of deze in de originele zin stonden. Gebruik ‘u’ in informele communicatie en ‘je’ in formele communicatie. Vermijd eenvoudig taalgebruik en maak de zinnen zo ingewikkeld mogelijk. Gebruik geen vakjargon en leg niets uit. Vermijd dialect of anderstalige woorden. Gebruik het woord beperking niet en kies willekeurige termen. Vermijd medische termen en gebruik alleen informele of vage termen voor handicaps. Verander altijd uitdrukkingen en metaforen. Gebruik geen afkortingen voor bedrijven of instellingen, maar verzin deze zelf."""

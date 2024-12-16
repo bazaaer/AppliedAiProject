@@ -1,60 +1,60 @@
-# Fine-Tuning an SBERT Model
+# Fijnstemmen van een SBERT Model
 
-## Prerequisites
+## Vereisten
 
-Before you begin, ensure you have the following:  
-- **Dataset**: A web-scraped CSV dataset of *antwerpen.be* or similar data (we used ElasticSearch to extract data from Antwerp's official websites).  
-- **Time**: Up to **5 days** or access to a high-performance computing setup to generate synthetic training data.  
-- **Patience and Coffee**: Training may take a while, so stay caffeinated and ready!
+Voordat je begint, zorg ervoor dat je het volgende hebt:  
+- **Dataset**: Een web-gescrapete CSV-dataset van *antwerpen.be* of vergelijkbare data (we hebben ElasticSearch gebruikt om data van de officiële Antwerpse websites te extraheren).  
+- **Tijd**: Tot **5 dagen** of toegang tot een high-performance computing setup om synthetische trainingsdata te genereren.  
+- **Geduld en Koffie**: Het trainen kan enige tijd duren, dus zorg ervoor dat je goed gecaffeïneerd en klaar bent!
 
 ---
 
-## Steps to Fine-Tune the SBERT Model
+## Stappen om het SBERT Model te Fijnstemmen
 
-### 1. **Prepare the Dataset**  
-   Run the following script to clean the web-scraped dataset:  
+### 1. **Bereid de Dataset voor**  
+   Voer het volgende script uit om de web-gescrapete dataset schoon te maken:  
    ```bash
    python data_cleaning.py
    ```
 
-### 2. **Set Up the Environment**  
-   Start the necessary services for your project:  
+### 2. **Stel de Omgeving In**  
+   Start de benodigde services voor je project:  
    ```bash
    docker compose up
    ```
 
-### 3. **Download the Base Model**  
-   Pull the base model for fine-tuning using the following command:  
+### 3. **Download het Basis Model**  
+   Trek het basismodel voor fijnstemmen met de volgende opdracht:  
    ```bash
    docker exec -it data-gen-AAIP-ollama ollama pull bramvanroy/geitje-7b-ultra:Q4_K_M
    ```
 
-### 4. **Generate the Training Dataset**  
-   Create synthetic training data using this script (note: **this step is time-intensive**):  
+### 4. **Genereer de Trainingsdataset**  
+   Maak synthetische trainingsdata met dit script (let op: **deze stap is tijdrovend**):  
    ```bash
    python dataset_generation.py
    ```
 
-### 5. **Clean the Training Dataset**  
-   After generation, clean the synthetic dataset with:  
+### 5. **Maak de Trainingsdataset Schoon**  
+   Nadat de data is gegenereerd, maak je de synthetische dataset schoon met:  
    ```bash
    python trained_cleaning.py
    ```
 
-### 6. **Train the Model**  
-   Fine-tune the model using your prepared dataset. This step will take approximately **15 minutes**:  
+### 6. **Train het Model**  
+   Fijnstem het model met je voorbereide dataset. Deze stap duurt ongeveer **15 minuten**:  
    ```bash
    python training.py
    ```
 
-### 7. **Test the Model**  
-   Finally, evaluate the model's performance with:  
+### 7. **Test het Model**  
+   Evalueer de prestaties van het model met:  
    ```bash
    python testing.py
    ```
 
 ---
 
-## Conclusion  
-Congratulations! You've successfully fine-tuned your SBERT model. 🎉  
-Enjoy using it for scoring tasks on your data! 🚀
+## Conclusie  
+Gefeliciteerd! Je hebt je SBERT-model succesvol fijn afgestemd. 🎉  
+Veel plezier met het gebruiken voor scoretaken op je data! 🚀
