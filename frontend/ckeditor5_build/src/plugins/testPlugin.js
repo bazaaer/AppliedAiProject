@@ -28,20 +28,25 @@ export default class testPlugin extends Plugin {
             });
     }
     //vervangt tekst en laat scores zien
-    _Replacetext(apiKey) {
+    async _Replacetext(apiKey) {
         const editor = this.editor;
         const editorElement = this.editor.ui.view.element;
 
         let previewText = editor.getData();
-        previewText = this._sendTextToApi(previewText,apiKey)
+        let msg = ""
+        previewText, msg = await this._sendTextToApi(previewText,apiKey)
         console.log(previewText)
 
-        editor.setData(previewText);
+        editor.setData(`${previewText}<p>${msg}<p/>`);
         const Div = document.createElement('div');
-        Div.innerHTML = '<p>Original text score: ???</p><p>New text score: ???</p>';
+        Div.innerHTML = '<p style="margin: 0;">Original text score: ???</p><p style="margin: 0;">New text score: ???</p>';
         Div.style.position = 'absolute';
-        Div.style.top = '0px';
-        Div.style.right = '10px';
+        Div.style.top = '5px';
+        Div.style.right = '5px';
+        Div.style.backgroundColor = 'rgb(240, 240, 240)';
+        Div.style.borderRadius = '10px';
+        Div.style.border = '1px solid black';
+        Div.style.padding = '5px';
         editorElement.appendChild(Div);
     }
     //haal verbeterde tekst van api op
@@ -61,13 +66,12 @@ export default class testPlugin extends Plugin {
         }).catch(error => {
             console.error('Error:', error);
           });
-        console.log(response)
         const result = await response.json();
         console.log(result)
         //tijdelijke aanpassing
         const newtext = result.data.text
         console.log(result.msg)
         console.log(`new text: ${newtext}`)
-        return newtext;
+        return newtext, result.msg;
     }
 }

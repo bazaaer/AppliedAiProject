@@ -27,23 +27,23 @@ export default class scorePlugin extends Plugin {
             return view;
             });
     }
-    _Scoretext(apiKey) {
+    async _Scoretext(apiKey) {
         const editor = this.editor;
         const model = editor.model;
         const editorElement = this.editor.ui.view.element;
-        const style = document.createElement('style');
-        style.type = 'text/css';
-        style.innerHTML = `
-            .highlight-high { background-color: #a8e6cf; }
-            .highlight-medium { background-color: #ffd3b6; }
-            .highlight-low { background-color: #ffaaa5; }
-        `;
-        document.head.appendChild(style);
+        // const style = document.createElement('style');
+        // style.type = 'text/css';
+        // style.innerHTML = `
+        //     .highlight-high { background-color: #a8e6cf; }
+        //     .highlight-medium { background-color: #ffd3b6; }
+        //     .highlight-low { background-color: #ffaaa5; }
+        // `;
+        // document.head.appendChild(style);
 
         let previewText = editor.getData();
         let totalscore = 0;
         let sentences = "";
-        sentences = this._sendTextToApi(previewText,apiKey)
+        sentences = await this._sendTextToApi(previewText,apiKey)
         // sentences = [
         // {
         //     "score": 0.7916542291641235,
@@ -61,10 +61,14 @@ export default class scorePlugin extends Plugin {
         })
         totalscore = Math.round((totalscore/i)*100)/100
         const Div = document.createElement('div');
-        Div.innerHTML = `<p>Score: ${totalscore}</p>`;
+        Div.innerHTML = `<p style="margin: 0;">Score: ${totalscore}</p>`;
         Div.style.position = 'absolute';
-        Div.style.top = '0px';
-        Div.style.right = '10px';
+        Div.style.top = '5px';
+        Div.style.right = '5px';
+        Div.style.backgroundColor = 'rgb(240, 240, 240)';
+        Div.style.borderRadius = '10px';
+        Div.style.border = '1px solid black';
+        Div.style.padding = '5px';
         editorElement.appendChild(Div);
 
         // model.change(writer => {
@@ -133,7 +137,7 @@ export default class scorePlugin extends Plugin {
         const requestData = {
             text: text
           };
-        const response = await fetch('https://klopta.vinnievirtuoso.online/api/texts/score', {
+        const response = await fetch('https://klopta.vinnievirtuoso.online/api/model/score', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -145,13 +149,10 @@ export default class scorePlugin extends Plugin {
         }).catch(error => {
             console.error('Error:', error);
           });
-        console.log(response)
         const result = await response.json();
         console.log(result)
         //tijdelijke aanpassing
-        const sentences = result.sentence_scores.text
-        console.log(result.msg)
-        console.log(`scores: ${sentences}`)
+        const sentences = result.sentence_scores
         return sentences;
     }
 }
