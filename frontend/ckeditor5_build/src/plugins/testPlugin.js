@@ -61,8 +61,9 @@ export default class testPlugin extends Plugin {
         }).catch(error => {
             console.error('Error:', error);
           });
-
+        console.log(response)
         const result = await response.json();
+        console.log(result)
         //tijdelijke aanpassing
         const newtext = result.data.text
         console.log(result.msg)
