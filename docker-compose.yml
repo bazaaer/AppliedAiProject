@@ -19,6 +19,7 @@ services:
       - REDIS_PORT=6379
       - RAY_SERVE_URL=http://KL-model:8000
       - RAY_DASHBOARD_URL=http://KL-model:8265
+      - OLLAMA_URL=http://KL-ollama:11434
     networks:
       - KL-database_network
       - KL-model_network
@@ -65,7 +66,13 @@ services:
       - KL-redis_data:/data
     networks:
       - KL-database_network
-
+  
+  KL-ollama:
+    image: ollama/ollama:latest
+    networks:
+      - internal_network
+    runtime: nvidia
+    
 networks:
   KL-database_network:
     driver: bridge
