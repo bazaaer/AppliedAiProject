@@ -427,11 +427,13 @@ paths:
               schema:
                 type: string
                 example: Klopta API is running!
+
   /api/model/rewrite:
     post:
       summary: Rewrite text
       description: >
-        Requires a valid API key. The API key can be obtained by logging in and generating an API key.
+        Rewrites the provided text using two language models. Allows optional streaming and caching of results.
+        Requires a valid API key or JWT token.
       tags:
         - Model
       requestBody:
@@ -444,6 +446,15 @@ paths:
                 text:
                   type: string
                   description: Text to rewrite
+                user_prompt:
+                  type: string
+                  description: Custom user prompt to guide the rewrite process
+                regenerate:
+                  type: boolean
+                  description: Force regeneration of the response, bypassing the cache
+                stream:
+                  type: boolean
+                  description: Stream the response incrementally
       responses:
         '200':
           description: Rewrite successful
@@ -455,14 +466,77 @@ paths:
                   msg:
                     type: string
                     example: Rewrite successful
-        '401':
-          description: API key required
+                  data:
+                    type: string
+                    description: The rewritten text
+        '400':
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '403':
-          description: Invalid or expired API key
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+
+  /api/model/pipeline:
+    post:
+      summary: Combined scoring and rewriting pipeline
+      description: >
+        Scores the provided text using Ray Serve, and rewrites sentences with low scores.
+        Requires a valid API key or JWT token.
+      tags:
+        - Model
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: >
+                    Input text to process. Text will be cleaned by removing HTML tags before scoring.
+                regenerate:
+                  type: boolean
+                  description: Force regeneration of rewritten responses, bypassing the cache
+      responses:
+        '200':
+          description: Pipeline executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        original_sentence:
+                          type: string
+                          description: The original sentence
+                        rewritten_sentence:
+                          type: string
+                          description: The rewritten sentence
+                        score:
+                          type: number
+                          description: Score assigned by the model
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
           content:
             application/json:
               schema:
