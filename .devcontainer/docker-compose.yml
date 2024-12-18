@@ -34,9 +34,6 @@ services:
     image: ollama/ollama:latest
     networks:
       - internal_network
-    environment:
-      OLLAMA_MAX_LOADED_MODELS: 2
-      OLLAMA_NUM_PARALLEL: 6
     runtime: nvidia
 
 volumes:
