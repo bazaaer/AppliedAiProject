@@ -15,7 +15,7 @@ llm_blueprint = Blueprint('llm', __name__)
 RAY_SERVE_URL = os.getenv("RAY_SERVE_URL", "http://localhost:8000")
 SCHRIJFASSISTENT_MODELFILE = "llm/Modelfile_schrijfassistent"
 STIJLASSISTENT_MODELFILE = "llm/Modelfile_stijlassistent"
-HOST = "http://ollama:11434"
+HOST = os.getenv("OLLAMA_URL", "http://ollama:11434")
 CLIENT = AsyncClient(host=HOST)
 
 async def initialize_models():
@@ -63,6 +63,7 @@ async def fetch_response_non_stream(client, model, prompt):
         raise ValueError(f"Error generating response from model '{model}': {e}")
 
 @llm_blueprint.route("/api/model/rewrite", methods=["POST"])
+@jwt_or_api_key_required(["admin", "user"])
 async def rewrite():
     """
     Handle requests to rewrite text using the LLM with optional streaming.
@@ -120,6 +121,7 @@ async def rewrite():
 
 
 @llm_blueprint.route("/api/model/pipeline", methods=["POST"])
+@jwt_or_api_key_required(["admin", "user"])
 async def pipeline():
     """
     Combined pipeline to score sentences and rewrite those with low scores.
@@ -157,11 +159,12 @@ async def pipeline():
             return jsonify({"error": "No sentence scores returned from Ray Serve"}), 500
 
         # Step 2: Rewrite low-score sentences
-        low_score_sentences = [s["sentence"] for s in sentence_scores if s["score"] < 0.8]
+        low_score_sentences = [s for s in sentence_scores if s["score"] < 0.8]
         cached_responses = {}
         non_cached_sentences = []
 
-        for sentence in low_score_sentences:
+        for sentence_data in low_score_sentences:
+            sentence = sentence_data["sentence"]
             cache_key = generate_cache_key(sentence)
             cached_response = llm_cache_store.get(cache_key) if not regenerate else None
             if cached_response:
@@ -190,24 +193,14 @@ async def pipeline():
         except Exception as e:
             current_app.logger.error(f"Error rewriting sentences: {e}")
 
-        results = []
-        for sentence_data in sentence_scores:
-            score = sentence_data["score"]
-            sentence = sentence_data["sentence"]
-
-            if score >= 0.8:
-                results.append({
-                    "original_sentence": sentence,
-                    "rewritten_sentence": sentence,
-                    "score": score
-                })
-            else:
-                rewritten_sentence = cached_responses.get(sentence, sentence)
-                results.append({
-                    "original_sentence": sentence,
-                    "rewritten_sentence": rewritten_sentence,
-                    "score": score
-                })
+        results = [
+            {
+                "original_sentence": sentence_data["sentence"],
+                "rewritten_sentence": cached_responses.get(sentence_data["sentence"], sentence_data["sentence"]),
+                "score": sentence_data["score"]
+            }
+            for sentence_data in sentence_scores
+        ]
 
         return jsonify({"results": results}), 200
 
