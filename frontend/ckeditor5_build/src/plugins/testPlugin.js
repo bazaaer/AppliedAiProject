@@ -33,11 +33,11 @@ export default class testPlugin extends Plugin {
         const editorElement = this.editor.ui.view.element;
 
         let previewText = editor.getData();
-        let msg = ""
-        previewText, msg = await this._sendTextToApi(previewText,apiKey)
-        console.log(previewText)
+        let text = ""
+        text = await this._sendTextToApi(previewText,apiKey)
+        console.log(text)
 
-        editor.setData(`${previewText}<p>${msg}<p/>`);
+        editor.setData(`${text}`);
         const Div = document.createElement('div');
         Div.innerHTML = '<p style="margin: 0;">Original text score: ???</p><p style="margin: 0;">New text score: ???</p>';
         Div.style.position = 'absolute';
@@ -72,6 +72,6 @@ export default class testPlugin extends Plugin {
         const newtext = result.data.text
         console.log(result.msg)
         console.log(`new text: ${newtext}`)
-        return newtext, result.msg;
+        return `${newtext}<p>${result.msg}<p/>`;
     }
 }
