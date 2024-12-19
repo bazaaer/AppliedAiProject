@@ -1,6 +1,6 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import icon from '../Icon_3.svg'
+import icon from '../check-mark.svg'
 
 export default class scorePlugin extends Plugin {
     init() {
