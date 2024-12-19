@@ -1,4 +1,4 @@
-# Fijnstemmen van een SBERT Model
+# Finetuning van een SBERT Model
 
 ## Vereisten
 
@@ -9,7 +9,7 @@ Voordat je begint, zorg ervoor dat je het volgende hebt:
 
 ---
 
-## Stappen om het SBERT Model te Fijnstemmen
+## Stappen om het SBERT Model te finetunen
 
 ### 1. **Bereid de Dataset voor**  
    Voer het volgende script uit om de web-gescrapete dataset schoon te maken:  
@@ -24,7 +24,7 @@ Voordat je begint, zorg ervoor dat je het volgende hebt:
    ```
 
 ### 3. **Download het Basis Model**  
-   Trek het basismodel voor fijnstemmen met de volgende opdracht:  
+   Pull het basismodel voor finetunen met de volgende opdracht:  
    ```bash
    docker exec -it data-gen-AAIP-ollama ollama pull bramvanroy/geitje-7b-ultra:Q4_K_M
    ```
@@ -42,7 +42,7 @@ Voordat je begint, zorg ervoor dat je het volgende hebt:
    ```
 
 ### 6. **Train het Model**  
-   Fijnstem het model met je voorbereide dataset. Deze stap duurt ongeveer **15 minuten**:  
+   Finetune het model met je voorbereide dataset. Deze stap duurt ongeveer **15 minuten**:  
    ```bash
    python training.py
    ```
@@ -56,5 +56,5 @@ Voordat je begint, zorg ervoor dat je het volgende hebt:
 ---
 
 ## Conclusie  
-Gefeliciteerd! Je hebt je SBERT-model succesvol fijn afgestemd. 🎉  
+Gefeliciteerd! Je hebt je SBERT-model succesvol finetuning. 🎉  
 Veel plezier met het gebruiken voor scoretaken op je data! 🚀
