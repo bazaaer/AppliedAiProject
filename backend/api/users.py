@@ -17,7 +17,7 @@ async def insert_user(username: str, password: str, role: str):
             {
                 "$setOnInsert": {
                     "username": username,
-                    "password": hashed_password.decode('utf-8'),
+                    "password": hashed_password,
                     "role": role
                 }
             },
