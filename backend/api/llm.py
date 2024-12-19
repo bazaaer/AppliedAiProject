@@ -61,6 +61,58 @@ async def fetch_response_non_stream(client, model, prompt):
         return response["response"]
     except Exception as e:
         raise ValueError(f"Error generating response from model '{model}': {e}")
+    
+@llm_blueprint.route("/api/model/fastwrite", methods=["POST"])
+@jwt_or_api_key_required(["admin", "user", "demo"])
+async def fastwrite():
+    """
+    Handle requests to rewrite text using the LLM with optional streaming.
+    """
+    try:
+        # Get request data
+        request_data = await request.get_json()
+        text = request_data.get("text")
+        user_prompt = request_data.get("user_prompt")
+        regenerate = request_data.get("regenerate", "false").lower() == "true"
+        stream = request_data.get("stream", "false").lower() == "true"
+
+        if not text:
+            return jsonify({"error": "No text provided"}), 400
+
+        # Generate a cache key based on text and user_prompt
+        cache_key = generate_cache_key(f"{text}_{user_prompt or ''}")
+
+        if not regenerate and not stream:
+            cached_response = llm_cache_store.get(cache_key)
+            if cached_response:
+                return jsonify({"msg": "Rewrite successful", "data": json.loads(cached_response)}), 200
+
+        text = process_text_before_rewriting(text)
+        if user_prompt:
+            first_model_prompt = f"{user_prompt}:\n\n{text}"
+        else:
+            first_model_prompt =f"Pas de schrijf regels toe op deze zin:\n\n{text}"
+
+        # Fetch the response from the second model (conditionally streaming)
+        if stream:
+            async def stream_response():
+                async for chunk in fetch_response_stream(CLIENT, "schrijfassistent", first_model_prompt):
+                    yield chunk
+
+            return current_app.response_class(stream_response(), content_type="text/plain", status=200)
+        else:
+            styled_response = await fetch_response_non_stream(CLIENT, "schrijfassistent", first_model_prompt)
+
+            styled_response = process_text_after_rewriting(styled_response)
+
+            # Cache the response
+            llm_cache_store.set(cache_key, json.dumps(styled_response), ex=REDIS_CACHE_TTL)
+            return jsonify({"msg": "Rewrite successful", "data": styled_response}), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Rewrite failed with error: {e}")
+        return jsonify({"error": "Rewrite failed"}), 500
+
 
 @llm_blueprint.route("/api/model/rewrite", methods=["POST"])
 @jwt_or_api_key_required(["admin", "user" , "demo"])
