@@ -1,10 +1,10 @@
 import React, { useState, useContext, useEffect } from "react";
 import Editor from "@ckeditor/ckeditor5-build-classic";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import { AuthContext } from "@/context/authContext"; // Assuming AuthContext is available
+import { AuthContext } from "@/context/authContext";
 
 const CKEditorComponent: React.FC = () => {
-  const { apiKey } = useContext(AuthContext); // Retrieve the API key from context
+  const { apiKey } = useContext(AuthContext);
   const [editorData, setEditorData] = useState("");
 
   const extractSentences = (text: string) => {
@@ -21,17 +21,17 @@ const CKEditorComponent: React.FC = () => {
   useEffect(() => {
     console.log("apiKey has changed, CKEditor will reinitialize.");
     console.log(apiKey);
-  }, [apiKey]); // Re-run the effect whenever the apiKey changes
+  }, [apiKey]);
 
   return (
     <div>
       <CKEditor
-        key={apiKey} // Using apiKey as the key prop will remount the editor when it changes
+        key={apiKey}
         editor={Editor}
         data=""
         config={{
           placeholder: "Type your content here...",
-          apiKey: apiKey || "", // Use the token as the API key
+          apiKey: apiKey || "",
         }}
         onReady={(editor) => {
           console.log("Editor is ready to use!", editor);

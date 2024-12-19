@@ -12,7 +12,6 @@ import { useAuth } from "@/context/authContext";
 export const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
   const { isLoggedIn } = useAuth();
 
-  // Define the tabs and conditionally include the 'Admin' tab
   const labeldata = [
     { label: "About", value: "about", content: <About /> },
     ...(isLoggedIn ? [{ label: "Admin", value: "admin", content: <UserMan /> }] : []),
@@ -21,7 +20,7 @@ export const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
   return (
     <section ref={ref} className="grid h-auto gap-8 place-items-center p-8">
       <Tabs
-        value="about" // Default tab
+        value="about"
         className="mx-auto max-w-7xl w-full mb-2"
       >
         <div className="w-full flex mb-1 flex-col items-center">

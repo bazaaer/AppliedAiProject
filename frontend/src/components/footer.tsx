@@ -3,8 +3,6 @@ import {
   IconButton
 } from "@material-tailwind/react";
 
-import Link from "next/link";
-
 const CURRENT_YEAR = new Date().getFullYear();
 const LINKS = [
   { name: "AP Hogeschool", href: "https://www.ap.be" },

@@ -2,26 +2,22 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
-// Define types for the AuthContext
 interface AuthContextType {
   isLoggedIn: boolean;
   apiKey: string | null;
   role: string | null;
   setApiKey: (apiKey: string | null) => void;
   setRole: (role: string | null) => void;
-  logout: () => void; // New logout method
+  logout: () => void;
 }
 
-// Create AuthContext
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// AuthProvider to wrap the app and provide context values
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); // Track login state
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
-  // Effect to load apiKey from localStorage if available
   useEffect(() => {
     const savedApiKey = localStorage.getItem('apiKey');
     const savedRole = localStorage.getItem('role');
@@ -31,11 +27,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (savedRole) {
       setRole(savedRole);
     }
-    // Set isLoggedIn based on the presence of apiKey
     setIsLoggedIn(!!savedApiKey);
   }, []);
 
-  // Save apiKey and role in localStorage whenever they change
   useEffect(() => {
     if (apiKey) {
       localStorage.setItem('apiKey', apiKey);
@@ -47,16 +41,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } else {
       localStorage.removeItem('role');
     }
-    // Update isLoggedIn based on apiKey
     setIsLoggedIn(!!apiKey);
   }, [apiKey, role]);
 
-  // Logout method to clear apiKey and role
   const logout = () => {
     setApiKey(null);
     setRole(null);
     localStorage.removeItem('apiKey');
     localStorage.removeItem('role');
+    localStorage.removeItem('username');
     setIsLoggedIn(false); // Set isLoggedIn to false upon logout
   };
 

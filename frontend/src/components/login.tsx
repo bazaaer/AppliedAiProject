@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Typography, Button } from "@material-tailwind/react";
-import { useAuth } from "@/context/authContext";  // Import the context to update the token
+import { useAuth } from "@/context/authContext";
 
 interface LoginProps {
   onClose: () => void;
@@ -13,7 +13,7 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   
-  const { setApiKey, setRole } = useAuth();  // Access context methods to set token and role
+  const { setApiKey, setRole } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,21 +31,17 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
         body: JSON.stringify({ username, password }),
       });
 
-      // Debugging: Log the response status
       console.log("Response status:", response.status); //test
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Login success:", data);  // Log the successful response
 
-        // Store the API key (token) and role in the context
-        setApiKey(data.token);  // Store the token as apiKey
-        setRole(data.role);      // Store the role (if necessary)
+        setApiKey(data.token);
+        setRole(data.role);
+        localStorage.setItem('username', username);
 
-        // Close the login popup and notify the app about successful login
         onClose();
       } else {
-        // If the response is not OK, we handle the error here
         console.log("Error response:", response);
         try {
           const errorData = await response.json();

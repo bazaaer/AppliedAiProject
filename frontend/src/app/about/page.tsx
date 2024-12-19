@@ -1,6 +1,5 @@
 'use client';
 
-// src/app/about/page.tsx
 import React from "react";
 import { Typography } from "@material-tailwind/react";
 import Link from "next/link";

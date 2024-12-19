@@ -1,14 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navbar as MTNavbar, Collapse, Button, IconButton, Typography } from "@material-tailwind/react";
 import { UserCircleIcon, CommandLineIcon, XMarkIcon, Bars3Icon } from "@heroicons/react/24/solid";
 import Login from "./login";
 import { useAuth } from "@/context/authContext";
 
 const NAV_MENU = [
-  {
-    name: "Account",
-    icon: UserCircleIcon,
-  },
   {
     name: "Docs",
     icon: CommandLineIcon,
@@ -45,6 +41,7 @@ function NavItem({ children, href }: NavItemProps) {
 export function Navbar({ bodyRef }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>("Try-Out Mode");
 
   const { isLoggedIn, logout } = useAuth();
 
@@ -56,11 +53,17 @@ export function Navbar({ bodyRef }: NavbarProps) {
 
   const handleLogout = () => {
     logout();
+    setUsername("Try-Out Mode");
   };
 
   const handleLogoClick = () => {
     bodyRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  useEffect(() => {
+    const savedUsername = localStorage.getItem("username");
+    setUsername(savedUsername || "Try-Out Mode");
+  }, [isLoggedIn]);
 
   React.useEffect(() => {
     window.addEventListener(
@@ -75,13 +78,17 @@ export function Navbar({ bodyRef }: NavbarProps) {
         <div className="container mx-auto flex items-center justify-between">
           <Typography
             as="a"
-            onClick={handleLogoClick} // Handle logo click to scroll to Body
+            onClick={handleLogoClick}
             color="blue-gray"
             className="text-lg font-bold text-[#fd5f22] cursor-pointer"
           >
             Klopta
           </Typography>
           <ul className="ml-10 hidden items-center gap-8 lg:flex ml-auto mr-auto">
+            <NavItem>
+              <UserCircleIcon className="h-5 w-5" />
+              {username}
+            </NavItem>
             {NAV_MENU.map(({ name, icon: Icon, href }) => (
               <NavItem key={name} href={href}>
                 <Icon className="h-5 w-5" />
@@ -110,6 +117,10 @@ export function Navbar({ bodyRef }: NavbarProps) {
         <Collapse open={open}>
           <div className="container mx-auto mt-3 border-t border-gray-200 px-2 pt-4">
             <ul className="flex flex-col gap-4">
+              <NavItem>
+                <UserCircleIcon className="h-5 w-5" />
+                {username}
+              </NavItem>
               {NAV_MENU.map(({ name, icon: Icon }) => (
                 <NavItem key={name}>
                   <Icon className="h-5 w-5" />
