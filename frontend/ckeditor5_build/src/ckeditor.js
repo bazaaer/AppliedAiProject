@@ -68,7 +68,7 @@ ClassicEditor.builtinPlugins = [
 	// SelectionModePlugin,
 	scorePlugin,
 	testPlugin,
-	HighlightPlugin,
+	// HighlightPlugin,
 	CloudServices
 ];
 
@@ -98,8 +98,8 @@ ClassicEditor.defaultConfig = {
 			// 'fulltextButton',
 			// 'selectionMode',
 			'scoreButton',
-			'testButton',
-			'highlightText'
+			'testButton'
+			// 'highlightText'
 		]
 	},
 	ui: {

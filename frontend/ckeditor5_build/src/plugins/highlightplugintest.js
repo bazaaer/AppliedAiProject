@@ -4,10 +4,6 @@ import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
 
 
 export default class HighlightPlugin extends Plugin {
-    static get pluginName() {
-        return 'HighlightPlugin';
-    }
-
     init() {
         const editor = this.editor;
         
@@ -17,17 +13,15 @@ export default class HighlightPlugin extends Plugin {
             model: 'highlight',
             view: {
                 name: 'span',
-                classes: 'text-highlight', // Define a CSS class for highlighting
+                classes: 'text-highlight',
             },
             upcastAlso: {
                 classes: 'text-highlight',
             },
         });
 
-        // Register the command
         editor.commands.add('highlightText', new HighlightCommand(editor));
 
-        // Add the button to the UI
         editor.ui.componentFactory.add('highlightText', (locale) => {
             const command = editor.commands.get('highlightText');
             const button = new ButtonView(locale);
@@ -40,10 +34,8 @@ export default class HighlightPlugin extends Plugin {
                 isToggleable: true,
             });
 
-            // Bind button state to command state
             button.bind('isOn', 'isEnabled').to(command, 'value', 'isEnabled');
 
-            // Execute command on button click
             this.listenTo(button, 'execute', () => {
                 editor.execute('highlightText');
             });
