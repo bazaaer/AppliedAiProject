@@ -31,7 +31,7 @@ export function Footer() {
             color="white"
             className="px-100 text-center my-3 !text-base bg-gray-500 bg-opacity-10 backdrop-blur-sm p-2 rounded-lg"
           >
-            You can always email us at john.doe@gmail.com
+            You can always email us at lander@vanderstighelen.net
           </Typography>
         </div>
 
