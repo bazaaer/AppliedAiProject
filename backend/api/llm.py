@@ -97,7 +97,7 @@ async def rewrite():
         rewritten_response = await fetch_response_non_stream(CLIENT, "schrijfassistent", first_model_prompt)
 
         # Use the output from the first model as input for the second model
-        second_model_prompt = f"Pas de stijlregels toe op deze zin: {rewritten_response}"
+        second_model_prompt = f"Pas de stijlregels toe op deze zin:\n\n{rewritten_response}"
 
         # Fetch the response from the second model (conditionally streaming)
         if stream:
