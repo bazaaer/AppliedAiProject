@@ -72,6 +72,9 @@ export default class testPlugin extends Plugin {
         Div.style.borderRadius = '10px';
         Div.style.border = '1px solid black';
         Div.style.padding = '5px';
+        Div.querySelector('#closeBtn').onclick = () => {
+            Div.remove();
+          };
         editorElement.appendChild(Div);
     }
     //haal verbeterde tekst van api op
