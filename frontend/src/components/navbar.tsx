@@ -61,14 +61,9 @@ export function Navbar({ bodyRef }: NavbarProps) {
   };
 
   useEffect(() => {
-    // Set username based on login status
-    if (isLoggedIn) {
-      const savedUsername = localStorage.getItem("username");
-      setUsername(savedUsername || "Try-Out Mode");
-    } else {
-      setUsername("Try-Out Mode");
-    }
-  }, [isLoggedIn]); // Run when `isLoggedIn` changes
+    const savedUsername = localStorage.getItem("username");
+    setUsername(savedUsername || "Try-Out Mode");
+  }, [isLoggedIn]);
 
   React.useEffect(() => {
     window.addEventListener(
