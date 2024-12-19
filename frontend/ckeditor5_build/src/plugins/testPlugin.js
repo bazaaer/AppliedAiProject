@@ -34,9 +34,9 @@ export default class testPlugin extends Plugin {
 
         let previewText = editor.getData();
         console.log(`Current text:${previewText}`)
-        let text = ""
-        text = await this._sendTextToApi(previewText,apiKey)
+        let text = await this._sendTextToApi(previewText,apiKey)
         console.log(text)
+        editor.setData(`${text}`);
 
         let sentences = "";
         let originalscore = 0;
@@ -57,7 +57,6 @@ export default class testPlugin extends Plugin {
         })
         newscore = Math.round((newscore/i)*100)/100
 
-        editor.setData(`${text}`);
         const Div = document.createElement('div');
         Div.innerHTML = `<p style="margin: 0;"><button id="closeBtn" style="
             color: grey;
