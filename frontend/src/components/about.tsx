@@ -13,9 +13,9 @@ export function About() {
             </Typography>
             <Typography
                 variant="lead"
-                className="mx-auto mt-8 mb-4 w-full px-8 !text-gray-700 lg:w-10/12 lg:px-12 xl:w-8/12 xl:px-20"
+                className="mx-auto mt-8 w-full px-8 !text-gray-700 lg:w-10/12 lg:px-12 xl:w-8/12 xl:px-20"
             >
-                we are extremely cool
+                Klopta is the smart sidekick for the editors of the City of Antwerp! This AI copilot helps you quickly improve, rewrite, and score your texts according to the style guides. Effortlessly create accessible and consistent content that leaves an impression.
             </Typography>
         </div>
     )
