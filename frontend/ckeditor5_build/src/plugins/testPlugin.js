@@ -59,7 +59,13 @@ export default class testPlugin extends Plugin {
 
         editor.setData(`${text}`);
         const Div = document.createElement('div');
-        Div.innerHTML = `<p style="margin: 0;">Originele score: ${originalscore}</p><p style="margin: 0;">Nieuwe score: ${newscore}</p>`;
+        Div.innerHTML = `<p style="margin: 0;"><button id="closeBtn" style="
+            color: grey;
+            border: none;
+            border-radius: 5px;
+            padding: 0px 5px;
+            cursor: pointer;
+        ">x</button>Originele score: ${originalscore}</p><p style="margin: 0; align="right"">Nieuwe score: ${newscore}</p>`;
         Div.style.position = 'absolute';
         Div.style.top = '5px';
         Div.style.right = '5px';

@@ -61,7 +61,13 @@ export default class scorePlugin extends Plugin {
         })
         totalscore = Math.round((totalscore/i)*100)/100
         const Div = document.createElement('div');
-        Div.innerHTML = `<p style="margin: 0;">Score: ${totalscore}</p>`;
+        Div.innerHTML = `<p style="margin: 0;"><button id="closeBtn" style="
+            color: grey;
+            border: none;
+            border-radius: 5px;
+            padding: 0px 5px;
+            cursor: pointer;
+        ">x</button>Score: ${totalscore}</p>`;
         Div.style.position = 'absolute';
         Div.style.top = '5px';
         Div.style.right = '5px';
@@ -69,6 +75,9 @@ export default class scorePlugin extends Plugin {
         Div.style.borderRadius = '10px';
         Div.style.border = '1px solid black';
         Div.style.padding = '5px';
+        Div.querySelector('#closeBtn').onclick = () => {
+            Div.remove();
+          };
         editorElement.appendChild(Div);
 
         // model.change(writer => {
