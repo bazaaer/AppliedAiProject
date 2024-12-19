@@ -1,8 +1,10 @@
 # Klopta: AI-Tool voor Stad Antwerpen  
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)  
-[![Build Status](https://img.shields.io/github/actions/workflow/status/bazaaer/AppliedAiProject/ci.yml?branch=main)](https://github.com/bazaaer/AppliedAiProject/actions)  
-[![Python Version](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)  
-[![Contributors](https://img.shields.io/github/contributors/bazaaer/AppliedAiProject)](https://github.com/bazaaer/AppliedAiProject/graphs/contributors)  
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?logo=open-source-initiative&logoColor=white)](https://opensource.org/licenses/MIT)<br>
+[![Frontend Build](https://img.shields.io/github/actions/workflow/status/bazaaer/AppliedAiProject/.github/workflows/frontend.yml?branch=main&label=Frontend%20Build&logo=react&logoColor=white)](https://github.com/bazaaer/AppliedAiProject/actions)<br>
+[![Backend Build](https://img.shields.io/github/actions/workflow/status/bazaaer/AppliedAiProject/.github/workflows/backend.yml?branch=main&label=Backend%20Build)](https://github.com/bazaaer/AppliedAiProject/actions)<br>
+[![Model Build](https://img.shields.io/github/actions/workflow/status/bazaaer/AppliedAiProject/.github/workflows/model.yml?branch=main&label=Model%20Build&logo=ollama)](https://github.com/bazaaer/AppliedAiProject/actions)<br>
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/downloads/)<br>
+[![Contributors](https://img.shields.io/github/contributors/bazaaer/AppliedAiProject)](https://github.com/bazaaer/AppliedAiProject/graphs/contributors)
 
 **Klopta** is een AI-gebaseerde applicatie die redacteurs van Stad Antwerpen ondersteunt bij het maken van hoogwaardige content. Het integreert **Checket**, een krachtige AI-assistent, om teksten te analyseren, verbeteren en herschrijven, terwijl consistentie met de huisstijl van de stad wordt gegarandeerd.  
 
