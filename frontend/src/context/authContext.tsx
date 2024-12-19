@@ -4,6 +4,7 @@ import React, { createContext, useState, useContext, ReactNode, useEffect } from
 
 interface AuthContextType {
   isLoggedIn: boolean;
+  isDemoUser: boolean;
   apiKey: string | null;
   role: string | null;
   setApiKey: (apiKey: string | null) => void;
@@ -18,88 +19,67 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isDemoUser, setIsDemoUser] = useState<boolean>(false);
 
   useEffect(() => {
+    // Check for saved API key and role in localStorage (for logged-in users)
     const savedApiKey = localStorage.getItem('apiKey');
     const savedRole = localStorage.getItem('role');
+
     if (savedApiKey) {
       setApiKey(savedApiKey);
-    }
-    if (savedRole) {
       setRole(savedRole);
+      setIsLoggedIn(true);
+    } else {
+      // Check for demo session in sessionStorage
+      const demoApiKey = sessionStorage.getItem('demoApiKey');
+      const demoRole = sessionStorage.getItem('demoRole');
+      if (demoApiKey) {
+        setApiKey(demoApiKey);
+        setRole(demoRole);
+        setIsDemoUser(true);
+      }
     }
-    setIsLoggedIn(!!savedApiKey);
   }, []);
 
   useEffect(() => {
     if (apiKey) {
-      localStorage.setItem('apiKey', apiKey);
+      if (!isDemoUser) {
+        localStorage.setItem('apiKey', apiKey);
+      }
     } else {
       localStorage.removeItem('apiKey');
+      sessionStorage.removeItem('demoApiKey');
     }
+
     if (role) {
-      localStorage.setItem('role', role);
+      if (!isDemoUser) {
+        localStorage.setItem('role', role);
+      }
     } else {
       localStorage.removeItem('role');
+      sessionStorage.removeItem('demoRole');
     }
-    setIsLoggedIn(!!apiKey);
-  }, [apiKey, role]);
 
-  const demoLogin = async () => {
-    // Set username and password for demo login
-    const username = 'temp';
-    const password = 'temp';
-  
-    try {
-      const response = await fetch("https://klopta.vinnievirtuoso.online/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
-  
-      console.log("Response status:", response.status); // For debugging
-  
-      if (response.ok) {
-        // Parse the response if login is successful
-        const data = await response.json();
-        const demoApiKey = data.token;
-  
-        // Store the API key and role in sessionStorage for the demo session
-        sessionStorage.setItem('apiKey', demoApiKey);
-  
-        // Update the state to reflect the demo login
-        setApiKey(demoApiKey);
-  
-        console.log("Demo login successful:", data);
-      } else {
-        console.log("Error response:", response);
-        try {
-          const errorData = await response.json();
-          console.log("Error data:", errorData); // For debugging
-          // Handle error and maybe set an error message state
-        } catch (parseError) {
-          console.log("Error parsing response:", parseError); // For debugging
-        }
-      }
-    } catch (error) {
-      console.log("Unexpected error:", error);
-      // Handle unexpected error
-    }
-  };
+    setIsLoggedIn(!!apiKey && !isDemoUser); // Logged-in state excludes demo users
+  }, [apiKey, role, isDemoUser]);
 
   const logout = () => {
     setApiKey(null);
     setRole(null);
+    setIsDemoUser(false);
     localStorage.removeItem('apiKey');
     localStorage.removeItem('role');
     localStorage.removeItem('username');
-    setIsLoggedIn(false); // Set isLoggedIn to false upon logout
+    sessionStorage.removeItem('demoApiKey');
+    sessionStorage.removeItem('demoRole');
+    setIsLoggedIn(false);
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, apiKey, role, setApiKey, setRole, logout, demoLogin }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, isDemoUser, apiKey, role, setApiKey, setRole, demoLogin, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
