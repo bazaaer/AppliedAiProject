@@ -65,7 +65,7 @@ export default class testPlugin extends Plugin {
             border-radius: 5px;
             padding: 0px 5px;
             cursor: pointer;
-        ">x</button>Originele score: ${originalscore}</p><p style="margin: 0; align="right"">Nieuwe score: ${newscore}</p>`;
+        ">x</button>Originele score: ${originalscore}</p><p style="margin: 0; text-align: right;">Nieuwe score: ${newscore}</p>`;
         Div.style.position = 'absolute';
         Div.style.top = '5px';
         Div.style.right = '5px';
