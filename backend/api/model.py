@@ -17,7 +17,7 @@ async def index():
     return jsonify({"msg": "Klopta API is running"}), 200
 
 @model_blueprint.route("/api/model/score", methods=["POST"])
-@jwt_or_api_key_required(["admin", "user"])
+@jwt_or_api_key_required(["admin", "user", "demo"])
 async def score():
     """
     Endpoint to score texts using Ray Serve.

@@ -3,30 +3,35 @@ from quart import Blueprint, request, jsonify
 import bcrypt
 from db import users_collection
 from api.utils import jwt_role_required
-from pymongo.errors import DuplicateKeyError
 
 users_bleuprint = Blueprint('users', __name__)
 
-# Define async function to insert admin user if not exists
-async def insert_admin_user(admin_username: str, admin_password: str):
-    # Attempt to find and update the admin user, or insert if not found
-    hashed_password = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt())
+async def insert_user(username: str, password: str, role: str):
+    # Hash the password
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    
     try:
+        # Attempt to find and update the user, or insert if not found
         result = await users_collection.find_one_and_update(
-            {"username": admin_username},
-            {"$setOnInsert": {
-                "username": admin_username,
-                "password": hashed_password,
-                "role": "admin"
-            }},
-            upsert=True
+            {"username": username},
+            {
+                "$setOnInsert": {
+                    "username": username,
+                    "password": hashed_password.decode('utf-8'),
+                    "role": role
+                }
+            },
+            upsert=True,
+            return_document=False  # Ensures None is returned for insertion
         )
+        
+        # Check if a new user was created
         if result is None:
-            print("Admin user created.")
-    except DuplicateKeyError:
-        print("Admin user already exists.")
+            print(f"{username} user created.")
+        else:
+            print(f"{username} user already exists.")
     except Exception as e:
-        print(f"An error occurred while inserting the admin user: {e}")
+        print(f"An error occurred while inserting the {username} user: {e}")
 
 @users_bleuprint.route("/api/users", methods=["POST"])
 @jwt_role_required(["admin"])

@@ -63,7 +63,7 @@ async def fetch_response_non_stream(client, model, prompt):
         raise ValueError(f"Error generating response from model '{model}': {e}")
 
 @llm_blueprint.route("/api/model/rewrite", methods=["POST"])
-@jwt_or_api_key_required(["admin", "user"])
+@jwt_or_api_key_required(["admin", "user" , "demo"])
 async def rewrite():
     """
     Handle requests to rewrite text using the LLM with optional streaming.
@@ -121,7 +121,7 @@ async def rewrite():
 
 
 @llm_blueprint.route("/api/model/pipeline", methods=["POST"])
-@jwt_or_api_key_required(["admin", "user"])
+@jwt_or_api_key_required(["admin", "user", "demo"])
 async def pipeline():
     """
     Combined pipeline to score sentences and rewrite those with low scores.

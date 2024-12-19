@@ -11,6 +11,7 @@ from config import ACCESS_EXPIRES, revoked_store
 from db import users_collection
 from api.utils import jwt_role_required
 import pytz
+from datetime import timedelta
 belgium_tz = pytz.timezone("Europe/Brussels")
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -45,10 +46,18 @@ async def login():
     user_claims = {
         "role": role,
     }
-    api_token = create_access_token(
-        identity=username,
-        user_claims=user_claims
-    )
+
+    if role != "demo":
+        api_token = create_access_token(
+            identity=username,
+            user_claims=user_claims
+        )
+    else:
+        api_token = create_access_token(
+            identity=username,
+            user_claims=user_claims,
+            expires_delta=timedelta(minutes=60),
+        )
 
     return jsonify({'token': api_token, "role": role}), 200
 
@@ -68,7 +77,7 @@ async def logout():
     return jsonify({"msg": "Token successfully revoked"}), 200
 
 @auth_blueprint.route("/api/protected", methods=["GET"])
-@jwt_role_required(["admin", "user"])
+@jwt_role_required(["admin", "user", "demo"])
 async def protected():
     """
     Protected route that requires a valid API token.

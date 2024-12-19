@@ -23,3 +23,6 @@ REDIS_CACHE_TTL = 3600
 # Load admin credentials
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "pwd")
+
+DEMO_USERNAME = os.getenv("DEMO_USERNAME", "temp")
+DEMO_PASSWORD = os.getenv("DEMO_PASSWORD", "temp")

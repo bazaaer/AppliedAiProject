@@ -5,7 +5,7 @@ import os
 from config import ACCESS_EXPIRES, revoked_store
 from api import auth_blueprint, model_blueprint, users_bleuprint, api_keys_blueprint, llm_blueprint
 from api.llm import initialize_models
-from config import ADMIN_USERNAME, ADMIN_PASSWORD
+from config import ADMIN_USERNAME, ADMIN_PASSWORD, DEMO_USERNAME, DEMO_PASSWORD
 import aiohttp
 
 
@@ -41,8 +41,9 @@ async def swagger_ui_files(filename):
 
 @app.before_serving
 async def startup():
-    from api.users import insert_admin_user
-    await insert_admin_user(ADMIN_USERNAME, ADMIN_PASSWORD)
+    from api.users import insert_user
+    await insert_user(ADMIN_USERNAME, ADMIN_PASSWORD, "admin")
+    await insert_user(DEMO_USERNAME, DEMO_PASSWORD, "demo")
     from db import create_indexes
     await create_indexes()
 
