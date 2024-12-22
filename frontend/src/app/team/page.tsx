@@ -1,11 +1,9 @@
 'use client';
 
-// src/app/about/page.tsx
 import React from 'react';
 import { Typography } from '@material-tailwind/react';
 import Link from 'next/link';
 
-// Define an array of team members with their details
 const teamMembers = [
   {
     name: 'Grim Van Daele',
