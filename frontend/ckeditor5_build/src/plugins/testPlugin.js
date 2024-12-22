@@ -36,7 +36,12 @@ export default class testPlugin extends Plugin {
         console.log(`Current text:${previewText}`)
         let text = await this._sendTextToApi(previewText,apiKey)
         console.log(text)
-        editor.setData(`${text}`);
+        editor.execute('selectAll');
+        const html = `${text}`;
+        const viewFragment = editor.data.processor.toView(html);
+        const modelFragment = editor.data.toModel(viewFragment);
+        editor.model.insertContent(modelFragment);
+        editor.editing.view.scrollToTheSelection();
 
         let sentences = "";
         let originalscore = 0;
