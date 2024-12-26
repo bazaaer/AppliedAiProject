@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState } from "react";
 import { Typography, Button } from "@material-tailwind/react";
@@ -12,50 +12,22 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  
-  const { setApiKey, setRole } = useAuth();
+
+  const { loginAs } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!username || !password) {
       setErrorMessage("Both fields are required.");
       return;
     }
 
     try {
-      const response = await fetch("https://klopta.vinnievirtuoso.online/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      console.log("Response status:", response.status); //test
-
-      if (response.ok) {
-        const data = await response.json();
-
-        setApiKey(data.token);
-        setRole(data.role);
-        localStorage.setItem('username', username);
-
-        onClose();
-      } else {
-        console.log("Error response:", response);
-        try {
-          const errorData = await response.json();
-          console.log("Error data:", errorData); //test
-          setErrorMessage(errorData.message || "Login failed. Please try again.");
-        } catch (parseError) {
-          console.log("Error parsing response:", parseError); //test
-          setErrorMessage("Login failed. An unknown error occurred.");
-        }
-      }
+      await loginAs(username, password);
+      onClose();
     } catch (error) {
-      // Catch any unexpected errors
-      console.log("Unexpected error:", error);
-      setErrorMessage("An unexpected error occurred. Please try again.");
+      setErrorMessage((error as Error).message);
     }
   };
 
