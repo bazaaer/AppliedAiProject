@@ -54,16 +54,15 @@ export function Navbar({ bodyRef }: NavbarProps) {
   const { isLoginOpen, openLogin, closeLogin } = useLogin();
   const { isLoggedIn, logout } = useAuth();
   const [open, setOpen] = useState(false);
-  const [username, setUsername] = useState<string | null>("Try-Out Mode");
+  const [username, setUsername] = useState<string | null>("logged out");
 
   const handleLogout = () => {
     logout();
-    setUsername("Try-Out Mode");
   };
 
   useEffect(() => {
     const savedUsername = localStorage.getItem("username");
-    setUsername(savedUsername || "Try-Out Mode");
+    setUsername(savedUsername === "temp" ? "try-out mode" : savedUsername || "logged out");
   }, [isLoggedIn]);
 
   return (
@@ -124,7 +123,7 @@ export function Navbar({ bodyRef }: NavbarProps) {
             </ul>
             <div className="mt-6 mb-4 flex items-center gap-2">
               <Button color="gray" onClick={isLoggedIn ? handleLogout : openLogin}>
-                {isLoggedIn ? "Log Out" : "Log In"}
+                {isLoggedIn ? (username === "try-out mode" ? "End Session" : "Log Out") : "Log In"}
               </Button>
             </div>
           </div>

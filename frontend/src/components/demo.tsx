@@ -11,6 +11,16 @@ function Demo() {
   const { isLoginOpen, openLogin, closeLogin } = useLogin();
   const { isLoggedIn } = useAuth();
 
+  const { loginAs } = useAuth();
+
+  const startDemo = async() => {
+    try {
+      await loginAs('temp', 'temp');
+    } catch (error) {
+      console.log((error as Error).message);
+    }
+  };
+
   return (
     <header className="mt-5 bg-white p-8">
       <section className="grid h-auto gap-5 place-items-center pb-12">
@@ -35,7 +45,7 @@ function Demo() {
                 color="blue"
                 size="lg"
                 className="mb-4"
-                onClick={() => console.log("Try out for free clicked")}
+                onClick={startDemo}
               >
                 Try out for free
               </Button>
