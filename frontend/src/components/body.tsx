@@ -10,11 +10,11 @@ import {
 import { useAuth } from "@/context/authContext";
 
 export const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
-  const { isLoggedIn } = useAuth();
+  const { role } = useAuth();
 
   const labeldata = [
     { label: "About", value: "about", content: <About /> },
-    ...(isLoggedIn ? [{ label: "Admin", value: "admin", content: <UserMan /> }] : []),
+    ...(role == 'admin' ? [{ label: "Admin", value: "admin", content: <UserMan /> }] : []),
   ];
 
   return (
