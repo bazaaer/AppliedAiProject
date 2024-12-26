@@ -91,7 +91,7 @@ export function Navbar({ bodyRef }: NavbarProps) {
           </ul>
           <div className="hidden items-center gap-2 lg:flex">
             <Button color="gray" onClick={isLoggedIn ? handleLogout : openLogin}>
-              {isLoggedIn ? "Log Out" : "Log In"}
+            {isLoggedIn ? (localStorage.getItem("username") == "temp" ? "Stop Demo" : "Log Out") : "Log In"}
             </Button>
           </div>
           <IconButton
@@ -123,7 +123,7 @@ export function Navbar({ bodyRef }: NavbarProps) {
             </ul>
             <div className="mt-6 mb-4 flex items-center gap-2">
               <Button color="gray" onClick={isLoggedIn ? handleLogout : openLogin}>
-                {isLoggedIn ? (username === "try-out mode" ? "End Session" : "Log Out") : "Log In"}
+                {isLoggedIn ? (localStorage.getItem("username") == "temp" ? "Stop Demo" : "Log Out") : "Log In"}
               </Button>
             </div>
           </div>
