@@ -65,7 +65,7 @@ ClassicEditor.builtinPlugins = [
 	TableToolbar,
 	TextTransformation,
 	// fulltextPlugin,
-	// SelectionModePlugin,
+	SelectionModePlugin,
 	scorePlugin,
 	testPlugin,
 	// HighlightPlugin,
@@ -96,7 +96,7 @@ ClassicEditor.defaultConfig = {
 			'redo',
 			'|',
 			// 'fulltextButton',
-			// 'selectionMode',
+			'selectionMode',
 			'scoreButton',
 			'testButton'
 			// 'highlightText'

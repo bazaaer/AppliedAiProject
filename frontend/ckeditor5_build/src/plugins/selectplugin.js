@@ -66,7 +66,7 @@ export default class SelectionModePlugin extends Plugin {
                 }
             });
 
-            console.log(this.selectedText);
+            console.log(`Selected text:${this.selectedText}`);
             this._showConfirmButton();
         }
     }

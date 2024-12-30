@@ -31,11 +31,43 @@ export default class scorePlugin extends Plugin {
         const editor = this.editor;
         const model = editor.model;
         const editorElement = this.editor.ui.view.element;
+        const view = editor.editing.view;
+        this.selection = model.document.selection;
+        this.selectedText = '';
+        if (this.selection.isCollapsed) {
+            console.log('Nothing is selected!');
+        }
+        else {
+            const viewRanges = Array.from(this.selection.getRanges()).map(range =>
+                editor.editing.mapper.toViewRange(range)
+            );
+            const domConverter = editor.editing.view.domConverter;
+            view.change(writer => {
+                for (const viewRange of viewRanges) {
+
+                    const domRange = domConverter.viewRangeToDom(viewRange);
+
+                    const container = document.createElement('div');
+                    container.appendChild(domRange.cloneContents());
+                    this.selectedText += container.innerHTML;
+                }
+            });
+            console.log(`Selected text:${this.selectedText}`);
+        }
 
         let previewText = editor.getData();
         let totalscore = 0;
         let sentences = "";
-        sentences = await this._sendTextToApi(previewText,apiKey)
+        if (!this.selectedText == '') 
+            {
+                sentences = await this._sendTextToApi(selectedText,apiKey)
+            }
+        else 
+        {
+            console.log(`Current text:${previewText}`)
+            sentences = await this._sendTextToApi(previewText,apiKey)
+        }
+        
         console.log(sentences)
         let i = 0
         sentences.forEach(({ score, sentence }) => {
