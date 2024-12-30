@@ -1,8 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Navbar as MTNavbar, Collapse, Button, IconButton, Typography } from "@material-tailwind/react";
-import { UserCircleIcon, CommandLineIcon, XMarkIcon, Bars3Icon } from "@heroicons/react/24/solid";
+import { 
+  Navbar as MTNavbar, 
+  Collapse, 
+  Button, 
+  IconButton, 
+  Typography 
+} from "@material-tailwind/react";
+import { 
+  UserCircleIcon, 
+  CommandLineIcon, 
+  XMarkIcon, 
+  Bars3Icon 
+} from "@heroicons/react/24/solid";
 import Login from "./login";
 import { useAuth } from "@/context/authContext";
+import { useLogin } from "@/context/loginContext";
 
 const NAV_MENU = [
   {
@@ -39,38 +51,19 @@ function NavItem({ children, href }: NavItemProps) {
 }
 
 export function Navbar({ bodyRef }: NavbarProps) {
-  const [open, setOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [username, setUsername] = useState<string | null>("Try-Out Mode");
-
+  const { isLoginOpen, openLogin, closeLogin } = useLogin();
   const { isLoggedIn, logout } = useAuth();
-
-  const handleOpen = () => setOpen((cur) => !cur);
-
-  const handleOpenLogin = () => setIsLoginOpen(true);
-
-  const handleCloseLogin = () => setIsLoginOpen(false);
+  const [open, setOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>("logged out");
 
   const handleLogout = () => {
     logout();
-    setUsername("Try-Out Mode");
-  };
-
-  const handleLogoClick = () => {
-    bodyRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
     const savedUsername = localStorage.getItem("username");
-    setUsername(savedUsername || "Try-Out Mode");
+    setUsername(savedUsername === "temp" ? "try-out mode" : savedUsername || "logged out");
   }, [isLoggedIn]);
-
-  React.useEffect(() => {
-    window.addEventListener(
-      "resize",
-      () => window.innerWidth >= 960 && setOpen(false)
-    );
-  }, []);
 
   return (
     <>
@@ -78,7 +71,7 @@ export function Navbar({ bodyRef }: NavbarProps) {
         <div className="container mx-auto flex items-center justify-between">
           <Typography
             as="a"
-            onClick={handleLogoClick}
+            onClick={() => bodyRef.current?.scrollIntoView({ behavior: "smooth" })}
             color="blue-gray"
             className="text-lg font-bold text-[#fd5f22] cursor-pointer"
           >
@@ -97,14 +90,14 @@ export function Navbar({ bodyRef }: NavbarProps) {
             ))}
           </ul>
           <div className="hidden items-center gap-2 lg:flex">
-            <Button color="gray" onClick={isLoggedIn ? handleLogout : handleOpenLogin}>
-              {isLoggedIn ? "Log Out" : "Log In"}
+            <Button color="gray" onClick={isLoggedIn ? handleLogout : openLogin}>
+            {isLoggedIn ? (localStorage.getItem("username") == "temp" ? "Stop Demo" : "Log Out") : "Log In"}
             </Button>
           </div>
           <IconButton
             variant="text"
             color="gray"
-            onClick={handleOpen}
+            onClick={() => setOpen((cur) => !cur)}
             className="ml-auto inline-block lg:hidden"
           >
             {open ? (
@@ -129,14 +122,14 @@ export function Navbar({ bodyRef }: NavbarProps) {
               ))}
             </ul>
             <div className="mt-6 mb-4 flex items-center gap-2">
-              <Button color="gray" onClick={isLoggedIn ? handleLogout : handleOpenLogin}>
-                {isLoggedIn ? "Log Out" : "Log In"}
+              <Button color="gray" onClick={isLoggedIn ? handleLogout : openLogin}>
+                {isLoggedIn ? (localStorage.getItem("username") == "temp" ? "Stop Demo" : "Log Out") : "Log In"}
               </Button>
             </div>
           </div>
         </Collapse>
       </MTNavbar>
-      {isLoginOpen && <Login onClose={handleCloseLogin} />}
+      {isLoginOpen && <Login onClose={closeLogin} />}
     </>
   );
 }

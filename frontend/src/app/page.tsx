@@ -10,18 +10,21 @@ import Body from "../components/body";
 
 // context
 import { AuthProvider } from "@/context/authContext";
+import { LoginProvider } from "@/context/loginContext";
 
 export default function Page() {
   const bodyRef = React.useRef<HTMLDivElement | null>(null);
 
   return (
     <AuthProvider>
-      <div>
-        <Navbar bodyRef={bodyRef} />
-        <Demo />
-        <Body ref={bodyRef} />
-        <Footer />
-      </div>
+      <LoginProvider>
+        <div>
+          <Navbar bodyRef={bodyRef} />
+          <Demo />
+          <Body ref={bodyRef} />
+          <Footer />
+        </div>
+      </LoginProvider>
     </AuthProvider>
   );
 }

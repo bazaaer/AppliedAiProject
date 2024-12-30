@@ -1,95 +1,98 @@
-'use client';
-
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
 interface AuthContextType {
   isLoggedIn: boolean;
-  isDemoUser: boolean;
-  apiKey: string | null;
   role: string | null;
-  setApiKey: (apiKey: string | null) => void;
-  setRole: (role: string | null) => void;
-  demoLogin: () => void;
+  apiKey: string | null;
+  setApiKey: (key: string) => void;
+  setRole: (role: string) => void;
+  loginAs: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [apiKey, setApiKey] = useState<string | null>(null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [role, setRole] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [isDemoUser, setIsDemoUser] = useState<boolean>(false);
+  const [apiKey, setApiKey] = useState<string | null>(null);
 
+  // Load token and role from cookies
   useEffect(() => {
-    // Check for saved API key and role in localStorage (for logged-in users)
-    const savedApiKey = localStorage.getItem('apiKey');
-    const savedRole = localStorage.getItem('role');
+    const savedApiKey = Cookies.get("apiKey");
+    const savedRole = Cookies.get("role");
 
     if (savedApiKey) {
       setApiKey(savedApiKey);
       setRole(savedRole);
       setIsLoggedIn(true);
-    } else {
-      // Check for demo session in sessionStorage
-      const demoApiKey = sessionStorage.getItem('demoApiKey');
-      const demoRole = sessionStorage.getItem('demoRole');
-      if (demoApiKey) {
-        setApiKey(demoApiKey);
-        setRole(demoRole);
-        setIsDemoUser(true);
-      }
     }
   }, []);
 
-  useEffect(() => {
-    if (apiKey) {
-      if (!isDemoUser) {
-        localStorage.setItem('apiKey', apiKey);
-      }
-    } else {
-      localStorage.removeItem('apiKey');
-      sessionStorage.removeItem('demoApiKey');
-    }
+  const loginAs = async (username: string, password: string): Promise<void> => {
+    try {
+      const response = await fetch("https://klopta.vinnievirtuoso.online/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (role) {
-      if (!isDemoUser) {
-        localStorage.setItem('role', role);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
       }
-    } else {
-      localStorage.removeItem('role');
-      sessionStorage.removeItem('demoRole');
-    }
 
-    setIsLoggedIn(!!apiKey && !isDemoUser); // Logged-in state excludes demo users
-  }, [apiKey, role, isDemoUser]);
+      const data = await response.json();
+      if (data.role === "temp") {
+        // cookies for "temp" expire at end of session
+        Cookies.set("apiKey", data.token, { secure: true, sameSite: "Strict" });
+        Cookies.set("role", data.role, { secure: true, sameSite: "Strict" });
+      } else {
+        Cookies.set("apiKey", data.token, { secure: true, sameSite: "Strict", expires: 7 });
+        Cookies.set("role", data.role, { secure: true, sameSite: "Strict", expires: 7 });
+      }
+
+      setApiKey(data.token);
+      setRole(data.role);
+      setIsLoggedIn(true);
+      localStorage.setItem("username", username);
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
+    }
+  };
 
   const logout = () => {
+    Cookies.remove("apiKey");
+    Cookies.remove("role");
+    localStorage.removeItem("username");
     setApiKey(null);
     setRole(null);
-    setIsDemoUser(false);
-    localStorage.removeItem('apiKey');
-    localStorage.removeItem('role');
-    localStorage.removeItem('username');
-    sessionStorage.removeItem('demoApiKey');
-    sessionStorage.removeItem('demoRole');
     setIsLoggedIn(false);
   };
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn, isDemoUser, apiKey, role, setApiKey, setRole, demoLogin, logout }}
+      value={{
+        isLoggedIn,
+        role,
+        apiKey,
+        setApiKey,
+        setRole,
+        loginAs,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook to access the AuthContext values
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
