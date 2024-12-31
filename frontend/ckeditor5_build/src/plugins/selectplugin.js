@@ -88,18 +88,13 @@ export default class SelectionModePlugin extends Plugin {
     _confirmSelection() {
         const editor = this.editor;
         const model = editor.model;
-        const dataProcessor = this.editor.data.processor;
-        const viewFragment = dataProcessor.toView(this.selectedText);
-        const modelFragment = this.editor.data.toModel(viewFragment);
+        const html = `${this.selectedText}`;
+        console.log("html: ",html)
+        const viewFragment = editor.data.processor.toView(html);
+        const modelFragment = editor.data.toModel(viewFragment);
 
-        if (this.selectedText) {
-            model.change(writer => {
-                for (const range of this.selection.getRanges()) {
-                    writer.remove(range);
-                    writer.insert(modelFragment, range.start);
-                }
-            });
-        }
+        editor.model.insertContent(modelFragment);
+        editor.editing.view.scrollToTheSelection();
 
         this.isSelectionModeActive = false;
         this.selectedText = '';

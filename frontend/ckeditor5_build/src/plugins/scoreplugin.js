@@ -35,7 +35,7 @@ export default class scorePlugin extends Plugin {
         this.selection = model.document.selection;
         this.selectedText = '';
         if (this.selection.isCollapsed) {
-            console.log('Nothing is selected!');
+            console.log('Niets geselecteerd');
         }
         else {
             const viewRanges = Array.from(this.selection.getRanges()).map(range =>
@@ -52,7 +52,6 @@ export default class scorePlugin extends Plugin {
                     this.selectedText += container.innerHTML;
                 }
             });
-            console.log(`Selected text:${this.selectedText}`);
         }
 
         let previewText = editor.getData();
@@ -60,7 +59,8 @@ export default class scorePlugin extends Plugin {
         let sentences = "";
         if (!this.selectedText == '') 
             {
-                sentences = await this._sendTextToApi(selectedText,apiKey)
+                console.log(`Selected text:${this.selectedText}`);
+                sentences = await this._sendTextToApi(this.selectedText,apiKey)
             }
         else 
         {

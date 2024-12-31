@@ -30,21 +30,61 @@ export default class testPlugin extends Plugin {
     //vervangt tekst en laat scores zien
     async _Replacetext(apiKey) {
         const editor = this.editor;
+        const model = editor.model;
         const editorElement = this.editor.ui.view.element;
+        const view = editor.editing.view;
+        this.selection = model.document.selection;
+        this.selectedText = '';
+        if (this.selection.isCollapsed) {
+            console.log('Niets geselecteerd');
+        }
+        else {
+            const viewRanges = Array.from(this.selection.getRanges()).map(range =>
+                editor.editing.mapper.toViewRange(range)
+            );
+            const domConverter = editor.editing.view.domConverter;
+            view.change(writer => {
+                for (const viewRange of viewRanges) {
+
+                    const domRange = domConverter.viewRangeToDom(viewRange);
+
+                    const container = document.createElement('div');
+                    container.appendChild(domRange.cloneContents());
+                    this.selectedText += container.innerHTML;
+                }
+            });
+        }
 
         let previewText = editor.getData();
-        console.log(`Current text:${previewText}`)
-        let text = await this._sendTextToApi(previewText,apiKey)
+        let text = "";
+        if (!this.selectedText == '') 
+            {
+                console.log(`Selected text:${this.selectedText}`);
+                text = await this._sendTextToApi(this.selectedText,apiKey)
+            }
+        else 
+        {
+            console.log(`Current text:${previewText}`)
+            text = await this._sendTextToApi(previewText,apiKey)
+        }
         console.log(text)
-        editor.execute('selectAll');
+        if (this.selectedText == '') 
+            {
+                editor.execute('selectAll');
+            }
+        if (text == '')
+            {
+                editor.model.change(writer => {
+                writer.setSelection(model.document.getRoot(), 0);});
+            }
         const html = `${text}`;
         const viewFragment = editor.data.processor.toView(html);
         const modelFragment = editor.data.toModel(viewFragment);
         editor.model.insertContent(modelFragment);
         editor.editing.view.scrollToTheSelection();
 
-        let sentences = "";
         let originalscore = 0;
+        let sentences = "";
         sentences = await this._scoreApi(previewText,apiKey)
         let i = 0
         sentences.forEach(({ score, sentence }) => {
@@ -102,8 +142,12 @@ export default class testPlugin extends Plugin {
         const result = await response.json();
         console.log(result)
         //tijdelijke aanpassing
-        const newtext = result.data
+        let newtext = result.data
         console.log(result.msg)
+        if (result.data == undefined || result.data == null)
+        {
+            newtext = ""
+        }
         console.log(`new text: ${newtext}`)
         return `${newtext}`;
     }
