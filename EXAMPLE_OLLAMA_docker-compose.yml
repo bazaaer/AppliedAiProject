@@ -1,0 +1,10 @@
+services:
+  KL-ollama:
+    image: ollama/ollama:latest
+    networks:
+      - KL-ollama_network
+    runtime: nvidia
+
+networks:
+  KL-ollama_network:
+    external: true

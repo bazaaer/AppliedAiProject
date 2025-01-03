@@ -23,10 +23,12 @@ services:
     networks:
       - KL-database_network
       - KL-model_network
+      - KL-ollama_network
       - traefik
     depends_on:
       - KL-mongodb
       - KL-redis
+      - KL-model
 
   KL-model:
     image: ghcr.io/bazaaer/klopta-model:latest
@@ -66,18 +68,14 @@ services:
       - KL-redis_data:/data
     networks:
       - KL-database_network
-  
-  KL-ollama:
-    image: ollama/ollama:latest
-    networks:
-      - internal_network
-    runtime: nvidia
-    
+
 networks:
   KL-database_network:
     driver: bridge
   KL-model_network:
     driver: bridge
+  KL-ollama_network:
+    external: true
   traefik:
     external: true
 
