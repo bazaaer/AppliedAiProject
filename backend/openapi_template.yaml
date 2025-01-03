@@ -11,7 +11,9 @@ servers:
 paths:
   /api/login:
     post:
-      summary: Login and obtain JWT token
+      summary: Login and obtain JWT token.
+      description: >
+        Requires a valid username and password. Log in with username:temp, password:temp for demo purposes.
       tags:
         - Authentication
       requestBody:
@@ -26,8 +28,10 @@ paths:
               properties:
                 username:
                   type: string
+                  default: temp
                 password:
                   type: string
+                  default: temp
       responses:
         '200':
           description: Successful login
@@ -58,7 +62,7 @@ paths:
   /api/users:
     post:
       summary: Create a new user (Admin only)
-      description: Requires admin role.
+      description: Requires admin role. 
       tags:
         - Users
       requestBody:
@@ -445,16 +449,23 @@ paths:
               properties:
                 text:
                   type: string
+                  default: "De workshop vindt plaats op 1/12/2024."
                   description: Text to rewrite
                 user_prompt:
                   type: string
-                  description: Custom user prompt to guide the rewrite process
+                  required: false
+                  default: ""
+                  description: Custom user prompt to guide the rewrite process. Not required.
                 regenerate:
-                  type: boolean
-                  description: Force regeneration of the response, bypassing the cache
+                  type: string
+                  required: false
+                  default: "false"
+                  description: Force regeneration of the response, bypassing the cache ("true" or "false"). Not required, default is "false".
                 stream:
-                  type: boolean
-                  description: Stream the response incrementally
+                  type: string
+                  required: false
+                  default: "false"
+                  description: Stream the response incrementally ("true" or "false"). Not required, default is "false".
       responses:
         '200':
           description: Rewrite successful
@@ -485,6 +496,72 @@ paths:
         - BearerAuth: []
         - ApiKeyAuth: []
 
+  /api/model/fastwrite:
+    post:
+      summary: Fast rewrite text
+      description: >
+        Quickly rewrites the provided text using a single language model. Allows optional streaming and caching of results.
+        Requires a valid API key or JWT token.
+      tags:
+        - Model
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  default: "De workshop vindt plaats op 1/12/2024."
+                  description: Text to rewrite
+                user_prompt:
+                  type: string
+                  required: false
+                  default: ""
+                  description: Custom user prompt to guide the rewrite process. Not required.
+                regenerate:
+                  type: string
+                  required: false
+                  default: "false"
+                  description: Force regeneration of the response, bypassing the cache ("true" or "false"). Not required, default is "false".
+                stream:
+                  type: string
+                  required: false
+                  default: "false"
+                  description: Stream the response incrementally ("true" or "false"). Not required, default is "false".
+      responses:
+        '200':
+          description: Rewrite successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Rewrite successful
+                  data:
+                    type: string
+                    description: The rewritten text
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+
+
+
   /api/model/pipeline:
     post:
       summary: Combined scoring and rewriting pipeline
@@ -502,11 +579,14 @@ paths:
               properties:
                 text:
                   type: string
+                  default: "De workshop vindt plaats op 1/12/2024. Het is onze bedoeling om in de toekomst initiatieven te nemen die bijdragen aan het vergroten van de veiligheid in onze buurten."
                   description: >
                     Input text to process. Text will be cleaned by removing HTML tags before scoring.
                 regenerate:
-                  type: boolean
-                  description: Force regeneration of rewritten responses, bypassing the cache
+                  type: string
+                  required: false
+                  default: "false"
+                  description: Force regeneration of rewritten responses, bypassing the cache. ("true" or "false"). Not required, default is "false".
       responses:
         '200':
           description: Pipeline executed successfully
