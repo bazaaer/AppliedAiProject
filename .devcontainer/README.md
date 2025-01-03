@@ -8,7 +8,7 @@ Deze handleiding beschrijft hoe je de Klopta-ontwikkelomgeving instelt met een D
 - **MongoDB**: Database met root-gebruikersinstellingen.  
 - **Redis**: Caching en token store.  
 - **Ollama**: AI-modelhost met NVIDIA GPU-ondersteuning.  
-- **DevContainer**: Hoofdservice met projectcode en packages.  
+- **DevContainer**: Hoofdservice met projectcode en packages (nvidia develompment container met cuda en nvcc).  
 
 **Geïnstalleerde Features**  
 - **Common-utils**: Inclusief `zsh`.  
