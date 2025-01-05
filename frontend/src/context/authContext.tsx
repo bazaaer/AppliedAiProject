@@ -66,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     Cookies.remove("apiKey");
     Cookies.remove("role");
-    localStorage.removeItem("username");
+    localStorage.setItem("username", "logged out");
     setApiKey(null);
     setRole(null);
     setIsLoggedIn(false);

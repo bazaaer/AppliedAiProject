@@ -1,5 +1,5 @@
 import React, { forwardRef } from "react";
-import { UserMan, About } from "@/components";
+import { UserMan, About, KeyMan } from "@/components";
 import {
   Tabs,
   TabsHeader,
@@ -14,7 +14,8 @@ export const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
 
   const labeldata = [
     { label: "About", value: "about", content: <About /> },
-    ...(role == 'admin' ? [{ label: "Admin", value: "admin", content: <UserMan /> }] : []),
+    ...(((role == 'user')||(role == 'admin')) ? [{ label: "Users", value: "users", content: <UserMan /> }] : []),
+    ...(role == 'admin' ? [{ label: "Keys", value: "admin", content: <KeyMan /> }] : []),
   ];
 
   return (

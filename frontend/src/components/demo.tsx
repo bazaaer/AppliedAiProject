@@ -32,7 +32,7 @@ function Demo() {
           color="gray"
           className="max-w-3xl mb-1 text-center text-gray-500"
         >
-          Enhance your writing by leaving the busywork to the AI.
+          Let Klopta handle the details, focus on what truly matters.
         </Typography>
       </section>
       <div className="w-full lg:container lg:mx-auto">
