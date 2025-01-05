@@ -4,7 +4,7 @@ import {
 
 export function About() {
     return (
-        <div>
+        <div className="max-h-[20rem] overflow-y-auto">
             <Typography
                 color="blue-gray"
                 className="mx-auto w-full text-[30px] lg:text-[48px] font-bold leading-[45px] lg:leading-[60px] lg:max-w-2xl"
