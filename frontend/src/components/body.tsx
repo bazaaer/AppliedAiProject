@@ -14,8 +14,8 @@ export const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
 
   const labeldata = [
     { label: "About", value: "about", content: <About /> },
-    ...(((role == 'user')||(role == 'admin')) ? [{ label: "Users", value: "users", content: <UserMan /> }] : []),
-    ...(role == 'admin' ? [{ label: "Keys", value: "admin", content: <KeyMan /> }] : []),
+    ...(role == 'admin' ? [{ label: "Users", value: "users", content: <UserMan /> }] : []),
+    ...(((role == 'user')||(role == 'admin')) ? [{ label: "Keys", value: "admin", content: <KeyMan /> }] : []),
   ];
 
   return (

@@ -69,12 +69,13 @@ export function UserMan() {
 
     const handleDeleteUser = async (username) => {
         try {
-            const response = await fetch(`https://klopta.vinnievirtuoso.online/api/users/${username}`, {
+            const response = await fetch(`https://klopta.vinnievirtuoso.online/api/users`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${apiKey}`,
                 },
+                body: JSON.stringify({ "username":username }),
             });
 
             if (!response.ok) {
