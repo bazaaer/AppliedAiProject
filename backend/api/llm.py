@@ -1,7 +1,7 @@
 # api/llm.py
 from quart import Blueprint, request, jsonify, current_app
 from api.utils import jwt_or_api_key_required
-from llm.llm import read_file_contents, process_text_before_rewriting, process_text_after_rewriting
+from llm.llm import process_text_before_rewriting, process_text_after_rewriting
 from config import llm_cache_store, REDIS_CACHE_TTL
 import json
 import hashlib
@@ -9,6 +9,7 @@ import os
 from ollama import AsyncClient
 from bs4 import BeautifulSoup
 import asyncio
+import aiofiles
 
 llm_blueprint = Blueprint('llm', __name__)
 
@@ -17,6 +18,17 @@ SCHRIJFASSISTENT_MODELFILE = "llm/Modelfile_schrijfassistent"
 STIJLASSISTENT_MODELFILE = "llm/Modelfile_stijlassistent"
 HOST = os.getenv("OLLAMA_URL", "http://ollama:11434")
 CLIENT = AsyncClient(host=HOST)
+
+async def read_file_contents(file_path):
+    """
+    Helper function to read file contents asynchronously.
+    """
+    try:
+        async with aiofiles.open(file_path, mode="r") as file:
+            return await file.read()
+    except Exception as e:
+        current_app.logger.error(f"Failed to read file '{file_path}': {e}")
+        raise
 
 async def initialize_models():
     """

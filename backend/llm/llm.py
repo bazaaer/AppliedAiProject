@@ -1,14 +1,6 @@
 import re
 from datetime import datetime
 
-def read_file_contents(filepath):
-    """Helper function to read and return the contents of a file."""
-    try:
-        with open(filepath, "r") as file:
-            return file.read()
-    except Exception as e:
-        return f"Could not read file {filepath}: {e}"
-
 # Precompile patterns
 URL_PATTERN = re.compile(r"\b(?:https?://)?(?:www\.)?([a-zA-Z0-9.-]+(?:\.[a-zA-Z]{2,}))\b")
 DATE_PATTERN = re.compile(r"\b(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})\b")
