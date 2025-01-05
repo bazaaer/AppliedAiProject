@@ -22,21 +22,32 @@ async def initialize_models():
     """
     Preload models on Ollama using the shared AsyncClient.
     """
+    client = AsyncClient(host=HOST)
+    
+    async def load_model(name, model_file_path):
+        try:
+            current_app.logger.info(f"Initializing model '{name}' with file '{model_file_path}'...")
+            modelfile_contents = await read_file_contents(model_file_path)
+            await client.create(model=name, modelfile=modelfile_contents)
+            current_app.logger.info(f"Model '{name}' initialized successfully.")
+        except Exception as e:
+            current_app.logger.error(f"Failed to initialize model '{name}': {e}")
+            raise
+
+    # Load models sequentially with detailed logging
     try:
-        client = AsyncClient(host=HOST)
-
-        await client.create(
-            model="schrijfassistent",
-            modelfile=read_file_contents(SCHRIJFASSISTENT_MODELFILE))
-
-        await client.create(
-            model="stijlassistent",
-            modelfile=read_file_contents(STIJLASSISTENT_MODELFILE)
-        )
-
-        current_app.logger.info("Models 'schrijfassistent' and 'stijlassistent' initialized successfully.")
-    except Exception as e:
-        current_app.logger.error(f"Model initialization failed: {e}")
+        await load_model("schrijfassistent", SCHRIJFASSISTENT_MODELFILE)
+    except Exception:
+        current_app.logger.error("Retrying model 'schrijfassistent' initialization...")
+        await asyncio.sleep(1)
+        await load_model("schrijfassistent", SCHRIJFASSISTENT_MODELFILE)
+    
+    try:
+        await load_model("stijlassistent", STIJLASSISTENT_MODELFILE)
+    except Exception:
+        current_app.logger.error("Retrying model 'stijlassistent' initialization...")
+        await asyncio.sleep(1)
+        await load_model("stijlassistent", STIJLASSISTENT_MODELFILE)
 
 def generate_cache_key(sentence: str) -> str:
     """
