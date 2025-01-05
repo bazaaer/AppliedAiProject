@@ -328,7 +328,7 @@ paths:
             schema:
               type: object
               required:
-                - api_key_id
+                - name
               properties:
                 api_key_id:
                   type: string
