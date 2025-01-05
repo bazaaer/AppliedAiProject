@@ -38,10 +38,10 @@ async def initialize_models():
     
     async def load_model(name, model_file_path):
         try:
-            current_app.logger.info(f"Initializing model '{name}' with file '{model_file_path}'...")
+            print(f"Initializing model '{name}' with file '{model_file_path}'...")
             modelfile_contents = await read_file_contents(model_file_path)
             await client.create(model=name, modelfile=modelfile_contents)
-            current_app.logger.info(f"Model '{name}' initialized successfully.")
+            print(f"Model '{name}' initialized successfully.")
         except Exception as e:
             current_app.logger.error(f"Failed to initialize model '{name}': {e}")
             raise
