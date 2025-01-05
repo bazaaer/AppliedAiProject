@@ -35,31 +35,49 @@ async def initialize_models():
     Preload models on Ollama using the shared AsyncClient.
     """
     client = AsyncClient(host=HOST)
-    
-    async def load_model(name, model_file_path):
+
+    async def pull_model(name):
+        try:
+            print(f"Pulling model '{name}'...")
+            response = await client.pull(model=name)
+            print(f"Model '{name}' pulled successfully. Response: {response}")
+        except Exception as e:
+            current_app.logger.error(f"Failed to pull model '{name}': {e}")
+            raise
+
+    async def create_model(name, model_file_path):
         try:
             print(f"Initializing model '{name}' with file '{model_file_path}'...")
             modelfile_contents = await read_file_contents(model_file_path)
-            await client.create(model=name, modelfile=modelfile_contents)
-            print(f"Model '{name}' initialized successfully.")
+            response = await client.create(model=name, modelfile=modelfile_contents)
+            print(f"Model '{name}' initialized successfully. Response: {response}")
         except Exception as e:
             current_app.logger.error(f"Failed to initialize model '{name}': {e}")
             raise
 
-    # Load models sequentially with detailed logging
     try:
-        await load_model("schrijfassistent", SCHRIJFASSISTENT_MODELFILE)
-    except Exception:
-        current_app.logger.error("Retrying model 'schrijfassistent' initialization...")
+        # Pull 'bramvanroy/geitje-7b-ultra:Q4_K_M' model first
+        await pull_model("bramvanroy/geitje-7b-ultra:Q4_K_M")
+    except Exception as e:
+        current_app.logger.error(f"Retrying 'bramvanroy/geitje-7b-ultra:Q4_K_M' pull after error: {e}")
         await asyncio.sleep(1)
-        await load_model("schrijfassistent", SCHRIJFASSISTENT_MODELFILE)
-    
+        await pull_model("bramvanroy/geitje-7b-ultra:Q4_K_M")
+
+    # Load 'schrijfassistent' model
     try:
-        await load_model("stijlassistent", STIJLASSISTENT_MODELFILE)
-    except Exception:
-        current_app.logger.error("Retrying model 'stijlassistent' initialization...")
+        await create_model("schrijfassistent", SCHRIJFASSISTENT_MODELFILE)
+    except Exception as e:
+        current_app.logger.error(f"Retrying 'schrijfassistent' initialization after error: {e}")
         await asyncio.sleep(1)
-        await load_model("stijlassistent", STIJLASSISTENT_MODELFILE)
+        await create_model("schrijfassistent", SCHRIJFASSISTENT_MODELFILE)
+
+    # Load 'stijlassistent' model
+    try:
+        await create_model("stijlassistent", STIJLASSISTENT_MODELFILE)
+    except Exception as e:
+        current_app.logger.error(f"Retrying 'stijlassistent' initialization after error: {e}")
+        await asyncio.sleep(1)
+        await create_model("stijlassistent", STIJLASSISTENT_MODELFILE)
 
 def generate_cache_key(sentence: str) -> str:
     """
