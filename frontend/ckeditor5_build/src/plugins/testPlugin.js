@@ -33,6 +33,7 @@ export default class testPlugin extends Plugin {
         const model = editor.model;
         const editorElement = this.editor.ui.view.element;
         const view = editor.editing.view;
+
         this.selection = model.document.selection;
         this.selectedText = '';
         if (this.selection.isCollapsed) {
@@ -68,6 +69,7 @@ export default class testPlugin extends Plugin {
             text = await this._sendTextToApi(previewText,apiKey)
         }
         console.log(text)
+
         if (this.selectedText == '') 
             {
                 editor.execute('selectAll');
@@ -77,6 +79,7 @@ export default class testPlugin extends Plugin {
                 editor.model.change(writer => {
                 writer.setSelection(model.document.getRoot(), 0);});
             }
+
         const html = `${text}`;
         const viewFragment = editor.data.processor.toView(html);
         const modelFragment = editor.data.toModel(viewFragment);
@@ -93,8 +96,9 @@ export default class testPlugin extends Plugin {
         })
         originalscore = Math.round((originalscore/i)*100)/100
 
+        let newText = editor.getData();
         let newscore = 0;
-        sentences = await this._scoreApi(text,apiKey)
+        sentences = await this._scoreApi(newText,apiKey)
         i = 0
         sentences.forEach(({ score, sentence }) => {
             newscore += score
@@ -102,7 +106,13 @@ export default class testPlugin extends Plugin {
         })
         newscore = Math.round((newscore/i)*100)/100
 
+        const existingDiv = document.getElementById('plugin-div');
+        if (existingDiv) {
+            existingDiv.remove();
+        }
+        
         const Div = document.createElement('div');
+        Div.id = 'plugin-div';
         Div.innerHTML = `<p style="margin: 0;"><button id="closeBtn" style="
             color: grey;
             border: none;

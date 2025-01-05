@@ -32,6 +32,7 @@ export default class scorePlugin extends Plugin {
         const model = editor.model;
         const editorElement = this.editor.ui.view.element;
         const view = editor.editing.view;
+
         this.selection = model.document.selection;
         this.selectedText = '';
         if (this.selection.isCollapsed) {
@@ -67,16 +68,22 @@ export default class scorePlugin extends Plugin {
             console.log(`Current text:${previewText}`)
             sentences = await this._sendTextToApi(previewText,apiKey)
         }
-        
         console.log(sentences)
+
         let i = 0
         sentences.forEach(({ score, sentence }) => {
             totalscore += score
             i += 1
         })
+
+        const existingDiv = document.getElementById('plugin-div');
+        if (existingDiv) {
+            existingDiv.remove();
+        }
         
         totalscore = Math.round((totalscore/i)*100)/100
         const Div = document.createElement('div');
+        Div.id = 'plugin-div';
         Div.innerHTML = `<p style="margin: 0;"><button id="closeBtn" style="
             color: grey;
             border: none;
