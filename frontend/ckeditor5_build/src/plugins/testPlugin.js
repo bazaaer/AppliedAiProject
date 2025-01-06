@@ -134,6 +134,10 @@ export default class testPlugin extends Plugin {
         Div.style.padding = '5px';
         Div.querySelector('#closeBtn').onclick = () => {
             Div.remove();
+            const previewDiv = document.getElementById('preview-div');
+            if (previewDiv) {
+                previewDiv.remove();
+            }
           };
         editorElement.appendChild(Div);
     }

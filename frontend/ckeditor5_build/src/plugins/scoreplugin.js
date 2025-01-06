@@ -112,6 +112,10 @@ export default class scorePlugin extends Plugin {
         Div.style.padding = '5px';
         Div.querySelector('#closeBtn').onclick = () => {
             Div.remove();
+            const previewDiv = document.getElementById('preview-div');
+            if (previewDiv) {
+                previewDiv.remove();
+            }
           };
 
         Div.querySelector('#infoBtn').onclick = () => {

@@ -92,6 +92,10 @@ export default class advancedPlugin extends Plugin {
 
         Div.querySelector('#closeBtn').onclick = () => {
             Div.remove();
+            const previewDiv = document.getElementById('preview-div');
+            if (previewDiv) {
+                previewDiv.remove();
+            }
           };
         
         const textInput = Div.querySelector('#textInput');
