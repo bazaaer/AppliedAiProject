@@ -41,6 +41,10 @@ export default class advancedPlugin extends Plugin {
         if (existingDiv) {
             existingDiv.remove();
         }
+        const previewDiv = document.getElementById('preview-div');
+            if (previewDiv) {
+                previewDiv.remove();
+            }
 
         const Div = document.createElement('div');
         Div.id = 'plugin-div';
