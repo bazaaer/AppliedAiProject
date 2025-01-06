@@ -76,6 +76,11 @@ export default class scorePlugin extends Plugin {
             i += 1
         })
 
+        const previewDiv = document.getElementById('preview-div');
+        if (previewDiv) {
+            previewDiv.remove();
+        }
+
         const existingDiv = document.getElementById('plugin-div');
         if (existingDiv) {
             existingDiv.remove();
@@ -90,7 +95,14 @@ export default class scorePlugin extends Plugin {
             border-radius: 5px;
             padding: 0px 5px;
             cursor: pointer;
-        ">x</button>Score: ${totalscore}</p>`;
+        ">x</button>Score: ${totalscore} <button id="infoBtn" style="
+            background-color: rgb(200, 200, 200);
+            color: black;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        ">?</button></p>`;
         Div.style.position = 'absolute';
         Div.style.top = '5px';
         Div.style.right = '5px';
@@ -101,6 +113,56 @@ export default class scorePlugin extends Plugin {
         Div.querySelector('#closeBtn').onclick = () => {
             Div.remove();
           };
+
+        Div.querySelector('#infoBtn').onclick = () => {
+            const previewDiv = document.getElementById('preview-div');
+                if (previewDiv) {
+                    previewDiv.remove();
+                }
+            sentences.sort((a, b) => a.score - b.score);
+            const Div = document.createElement('div');
+            Div.id = 'preview-div';
+            Div.innerHTML = `<p style="margin: 0;"><button id="closeBtn" style="
+                color: grey;
+                border: none;
+                border-radius: 5px;
+                padding: 0px 5px;
+                cursor: pointer;
+            ">x</button></p>`;
+            Div.style.position = 'absolute';
+            Div.style.top = '50px';
+            Div.style.right = '5px';
+            Div.style.backgroundColor = 'rgb(240, 240, 240)';
+            Div.style.borderRadius = '10px';
+            Div.style.border = '1px solid black';
+            Div.style.padding = '5px';
+            Div.style.maxWidth = '300px';
+            Div.style.maxHeight = '200px';
+            Div.style.overflowY = 'auto';
+            Div.querySelector('#closeBtn').onclick = () => {
+                Div.remove();
+            };
+            sentences.forEach(item => {
+                const rowDiv = document.createElement("div");
+                rowDiv.style.display = "flex";
+                rowDiv.style.justifyContent = "space-between";
+                rowDiv.style.marginBottom = "8px";
+
+                const sentence  = document.createElement("p");
+                sentence.textContent = item.sentence;
+                sentence.style.margin = "0";
+
+                const number = document.createElement("p");
+                number.textContent = `Score: ${Math.round(item.score*100)/100}`;
+                number.style.margin = "0";
+
+                rowDiv.appendChild(sentence);
+                rowDiv.appendChild(number);
+                Div.appendChild(rowDiv);
+            });
+            editorElement.appendChild(Div);
+          };
+        
         editorElement.appendChild(Div);
 
         previewText = editor.getData();

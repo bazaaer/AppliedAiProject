@@ -106,6 +106,11 @@ export default class testPlugin extends Plugin {
         })
         newscore = Math.round((newscore/i)*100)/100
 
+        const previewDiv = document.getElementById('preview-div');
+        if (previewDiv) {
+            previewDiv.remove();
+        }
+
         const existingDiv = document.getElementById('plugin-div');
         if (existingDiv) {
             existingDiv.remove();

@@ -173,9 +173,51 @@ export default class advancedPlugin extends Plugin {
             Div.style.maxWidth = '300px';
             Div.style.maxHeight = '200px';
             Div.style.overflowY = 'auto';
+            Div.style.resize = 'both';
+            Div.style.cursor = 'grab';
             Div.querySelector('#closeBtn').onclick = () => {
                 Div.remove();
             };
+
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            const isResizeHandle = (e) => {
+                const rect = Div.getBoundingClientRect();
+                return (
+                    e.clientX >= rect.right - 15 &&
+                    e.clientY >= rect.bottom - 15 &&
+                    e.clientX <= rect.right &&
+                    e.clientY <= rect.bottom
+                );
+            };
+
+            Div.addEventListener('mousedown', (e) => {
+                if (e.target.id !== 'closeBtn' && e.target.id !== 'textInput' && e.target.tagName !== 'BUTTON') {
+                    if (isResizeHandle(e)) {
+                        return;
+                    }
+                    isDragging = true;
+                    offsetX = e.pageX - Div.getBoundingClientRect().left + editorElement.getBoundingClientRect().left;
+                    offsetY = e.pageY - Div.getBoundingClientRect().top + editorElement.getBoundingClientRect().top;
+                    Div.style.cursor = 'grabbing';
+                }
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    Div.style.left = `${e.pageX - offsetX}px`;
+                    Div.style.top = `${e.pageY - offsetY}px`;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    Div.style.cursor = 'grab';
+                }
+            });
+
             editorElement.appendChild(Div);
 
 
