@@ -1,73 +1,73 @@
 # TODO
 
 start site: npx next
-# Getting Started with Create React App
+# Aan de slag met Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Dit project is opgezet met [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## Beschikbare scripts
 
-In the project directory, you can run:
+In de projectmap kun je de volgende scripts uitvoeren:
 
 ### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Start de app in ontwikkelmodus.\
+Open [http://localhost:3000](http://localhost:3000) om het in je browser te bekijken.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+De pagina wordt opnieuw geladen wanneer je wijzigingen aanbrengt.\
+Eventuele lintfouten worden weergegeven in de console.
 
 ### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Start de testrunner in interactieve watch-modus.\
+Zie de sectie over [tests uitvoeren](https://facebook.github.io/create-react-app/docs/running-tests) voor meer informatie.
 
 ### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Bouwt de app voor productie in de map `build`.\
+Het bundelt React correct in productiemodus en optimaliseert de build voor de beste prestaties.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+De build wordt geminimaliseerd en de bestandsnamen bevatten hashes.\
+Je app is klaar om te worden gedeployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Zie de sectie over [deployment](https://facebook.github.io/create-react-app/docs/deployment) voor meer informatie.
 
 ### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+**Let op: dit is een eenrichtingsoperatie. Als je `eject` gebruikt, kun je niet meer terug!**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Als je niet tevreden bent met de buildtool- en configuratiekeuzes, kun je op elk moment `eject` gebruiken. Dit commando verwijdert de enkele buildafhankelijkheid uit je project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Het kopieert alle configuratiebestanden en transitieve afhankelijkheden (zoals webpack, Babel, ESLint, enz.) rechtstreeks naar je project, zodat je volledige controle hebt. Alle andere commando's behalve `eject` blijven werken, maar ze verwijzen naar de gekopieerde scripts, zodat je ze kunt aanpassen. Vanaf dat moment ben je op jezelf aangewezen.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Je hoeft nooit `eject` te gebruiken. Het samengestelde pakket is geschikt voor kleine en middelgrote implementaties, en je hoeft je niet verplicht te voelen om deze functie te gebruiken. We begrijpen echter dat deze tool niet nuttig zou zijn als je het niet kunt aanpassen wanneer je er klaar voor bent.
 
-## Learn More
+## Meer leren
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Je kunt meer leren in de [Create React App-documentatie](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Om React te leren, bekijk de [React-documentatie](https://reactjs.org/).
 
 ### Code Splitting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Deze sectie is verplaatst naar: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-### Analyzing the Bundle Size
+### De bundelgrootte analyseren
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Deze sectie is verplaatst naar: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
 
-### Making a Progressive Web App
+### Een Progressive Web App maken
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Deze sectie is verplaatst naar: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
 
-### Advanced Configuration
+### Geavanceerde configuratie
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Deze sectie is verplaatst naar: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
 
 ### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Deze sectie is verplaatst naar: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
-### `npm run build` fails to minify
+### `npm run build` slaagt er niet in om te minificeren
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Deze sectie is verplaatst naar: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
