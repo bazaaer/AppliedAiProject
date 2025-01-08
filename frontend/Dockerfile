@@ -5,7 +5,7 @@ FROM node:18 AS builder
 WORKDIR /app
 
 # Copy package.json and package-lock.json to the working directory
-COPY package.json ./
+COPY package.json package-lock.json ./
 
 # Install dependencies
 RUN npm install
@@ -20,8 +20,8 @@ RUN npm run build --no-lint
 FROM nginx:latest
 
 # Copy the built application files to Nginx web root
-COPY --from=builder /app/.next /usr/share/nginx/html
-COPY --from=builder /app/public /usr/share/nginx/html/public
+COPY --from=builder /app/.next/static /usr/share/nginx/html/static
+COPY --from=builder /app/public /usr/share/nginx/html
 
 # Copy custom Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
