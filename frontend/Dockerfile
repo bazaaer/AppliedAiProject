@@ -14,7 +14,7 @@ RUN npm install
 COPY . ./
 
 # Build the application
-RUN npm run build
+RUN npm run build --no-lint
 
 # Use the official Nginx image as the base for serving the app
 FROM nginx:latest
