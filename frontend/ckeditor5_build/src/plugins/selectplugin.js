@@ -65,8 +65,6 @@ export default class SelectionModePlugin extends Plugin {
                     this.selectedText += container.innerHTML;
                 }
             });
-
-            console.log(`Selected text:${this.selectedText}`);
             this._showConfirmButton();
         }
     }
@@ -89,7 +87,6 @@ export default class SelectionModePlugin extends Plugin {
         const editor = this.editor;
         const model = editor.model;
         const html = `${this.selectedText}`;
-        console.log("html: ",html)
         const viewFragment = editor.data.processor.toView(html);
         const modelFragment = editor.data.toModel(viewFragment);
 

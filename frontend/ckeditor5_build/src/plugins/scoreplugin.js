@@ -60,15 +60,12 @@ export default class scorePlugin extends Plugin {
         let sentences = "";
         if (!this.selectedText == '') 
             {
-                console.log(`Selected text:${this.selectedText}`);
                 sentences = await this._sendTextToApi(this.selectedText,apiKey)
             }
         else 
         {
-            console.log(`Current text:${previewText}`)
             sentences = await this._sendTextToApi(previewText,apiKey)
         }
-        console.log(sentences)
 
         let i = 0
         sentences.forEach(({ score, sentence }) => {
@@ -170,7 +167,6 @@ export default class scorePlugin extends Plugin {
         editorElement.appendChild(Div);
 
         previewText = editor.getData();
-        console.log(previewText)
     }
 
     async _sendTextToApi(text,apiKey) {
@@ -190,7 +186,6 @@ export default class scorePlugin extends Plugin {
             console.error('Error:', error);
           });
         const result = await response.json();
-        console.log(result)
         //tijdelijke aanpassing
         const sentences = result.sentence_scores
         return sentences;

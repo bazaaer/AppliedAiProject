@@ -13,11 +13,6 @@ const CKEditorComponent: React.FC = () => {
     return sentences;
   };
 
-  const logSentences = (data: string) => {
-    const sentences = extractSentences(data);
-    console.log("Sentences:", sentences);
-  };
-
   return (
     <div>
       <CKEditor
@@ -34,7 +29,6 @@ const CKEditorComponent: React.FC = () => {
         onChange={(event, editor) => {
           const data = editor.getData();
           setEditorData(data);
-          logSentences(data);
         }}
         onBlur={(event, editor) => {
           console.log("Blur.", editor);

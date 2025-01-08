@@ -76,7 +76,6 @@ export default class fulltextPlugin extends Plugin {
             //verwijdert alle html tags zonder de structuur te veranderen
             const plainText = previewText.replace(/<\/(h[1-6]|p)>/g, '\n').replace(/<(h[1-6]|p)[^>]*>/g, '\n').replace(/<br\s*\/?>/g, '\n').replace(/<\/?[^>]+(>|$)/g, "").replace(/\n\s*\n/g, '\n').trim();
             previewTextView.element.textContent = plainText;
-            console.log(previewText)
         });
 
         const acceptButton = new ButtonView();

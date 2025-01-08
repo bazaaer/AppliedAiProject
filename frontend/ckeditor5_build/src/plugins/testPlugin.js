@@ -60,15 +60,12 @@ export default class testPlugin extends Plugin {
         let text = "";
         if (!this.selectedText == '') 
             {
-                console.log(`Selected text:${this.selectedText}`);
                 text = await this._sendTextToApi(this.selectedText,apiKey)
             }
         else 
         {
-            console.log(`Current text:${previewText}`)
             text = await this._sendTextToApi(previewText,apiKey)
         }
-        console.log(text)
 
         if (this.selectedText == '') 
             {
@@ -159,15 +156,12 @@ export default class testPlugin extends Plugin {
             console.error('Error:', error);
           });
         const result = await response.json();
-        console.log(result)
         //tijdelijke aanpassing
         let newtext = result.data
-        console.log(result.msg)
         if (result.data == undefined || result.data == null)
         {
             newtext = ""
         }
-        console.log(`new text: ${newtext}`)
         return `${newtext}`;
     }
     async _scoreApi(text,apiKey) {
@@ -187,7 +181,6 @@ export default class testPlugin extends Plugin {
             console.error('Error:', error);
           });
         const result = await response.json();
-        console.log(result)
         //tijdelijke aanpassing
         const sentences = result.sentence_scores
         return sentences;

@@ -141,18 +141,12 @@ export default class advancedPlugin extends Plugin {
             
             if (!this.selectedText == '') 
                 {
-                    console.log(`Selected text:${this.selectedText}`);
-                    console.log(`Input content: ${textInput.value}`)
                     text = await this._sendTextToApi(this.selectedText,textInput.value,apiKey)
                 }
             else 
             {
-                console.log(`Current text:${previewText}`)
-                console.log(`Input content: ${textInput.value}`)
                 text = await this._sendTextToApi(previewText,textInput.value,apiKey)
             }
-            console.log(text)
-
             const existingDiv = document.getElementById('preview-div');
             if (existingDiv) {
                 existingDiv.remove();
@@ -235,7 +229,6 @@ export default class advancedPlugin extends Plugin {
         };
 
         Div.querySelector('#acceptBtn').onclick = () => {
-            console.log('Accept button clicked!');
             const existingDiv = document.getElementById('preview-div');
             if (existingDiv) {
                 existingDiv.remove();
@@ -282,15 +275,12 @@ export default class advancedPlugin extends Plugin {
             console.error('Error:', error);
           });
         const result = await response.json();
-        console.log(result)
         //tijdelijke aanpassing
         let newtext = result.data
-        console.log(result.msg)
         if (result.data == undefined || result.data == null)
         {
             newtext = ""
         }
-        console.log(`new text: ${newtext}`)
         return `${newtext}`;
     }
 }
