@@ -1,14 +1,16 @@
-# Use the official Nginx image as the base
-FROM nginx:latest
+# Stage 1: Build the React application
+FROM node:18 as build
 
-# Copy custom Nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
+COPY . . 
+RUN npm install
+RUN npm run build
 
-# Copy frontend files to Nginx web root
-COPY ./index.html /usr/share/nginx/html/index.html
+# Stage 2: Serve the app with Nginx
+FROM nginx:1.25
 
-# Expose port 80
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY --from=build /app/build /usr/share/nginx/html
+
 EXPOSE 80
-
-# Start Nginx when the container launches
 CMD ["nginx", "-g", "daemon off;"]
