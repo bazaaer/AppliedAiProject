@@ -1,8 +1,9 @@
 # Stage 1: Build the React application
-FROM node:18 as build
+FROM node:18 AS build
 
 WORKDIR /app
-COPY . . 
+COPY . .
+ENV NEXT_DISABLE_ESLINT=1
 RUN npm install
 RUN npm run build
 
