@@ -9,13 +9,13 @@ import {
 } from "@material-tailwind/react";
 import { useAuth } from "@/context/authContext";
 
-export const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
+const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
   const { role } = useAuth();
 
   const labeldata = [
     { label: "About", value: "about", content: <About /> },
-    ...(role == 'admin' ? [{ label: "Users", value: "users", content: <UserMan /> }] : []),
-    ...(((role == 'user')||(role == 'admin')) ? [{ label: "Keys", value: "admin", content: <KeyMan /> }] : []),
+    ...(role === 'admin' ? [{ label: "Users", value: "users", content: <UserMan /> }] : []),
+    ...((role === 'user' || role === 'admin') ? [{ label: "Keys", value: "admin", content: <KeyMan /> }] : []),
   ];
 
   return (
@@ -44,5 +44,8 @@ export const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
     </section>
   );
 });
+
+// Assign a display name to the component
+Body.displayName = "Body";
 
 export default Body;
