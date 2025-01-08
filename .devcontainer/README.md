@@ -1,6 +1,6 @@
 # Klopta DevContainer Documentatie
 
-Deze handleiding beschrijft hoe je de Klopta-ontwikkelomgeving instelt met een DevContainer-configuratie. De setup gebruikt Docker Compose en biedt ondersteuning voor NVIDIA GPU-acceleratie, MongoDB, Redis en AI-tools.
+Deze handleiding beschrijft hoe je de Klopta-ontwikkelomgeving instelt met een DevContainer-configuratie. De setup gebruikt Docker Compose en biedt ondersteuning voor NVIDIA GPU-acceleratie, MongoDB, Redis en AI-tools. De devcontianer is enkel geschikt voor de backend en AI modellen te ontwikkelen. 
 
 ## Overzicht
 
