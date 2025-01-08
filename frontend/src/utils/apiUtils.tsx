@@ -31,7 +31,6 @@ const Login: React.FC<LoginProps> = ({ onClose, onLoginSuccess }) => {
 
       if (response.ok) {
         const data = await response.text();
-        console.log(data); // Bearer token will be returned
         login(data); // Store the token in context
         onLoginSuccess();
         onClose();

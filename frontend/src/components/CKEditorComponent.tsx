@@ -18,11 +18,6 @@ const CKEditorComponent: React.FC = () => {
     console.log("Sentences:", sentences);
   };
 
-  useEffect(() => {
-    console.log("apiKey has changed, CKEditor will reinitialize.");
-    console.log(apiKey);
-  }, [apiKey]);
-
   return (
     <div>
       <CKEditor
@@ -40,7 +35,6 @@ const CKEditorComponent: React.FC = () => {
           const data = editor.getData();
           setEditorData(data);
           logSentences(data);
-          console.log(data);
         }}
         onBlur={(event, editor) => {
           console.log("Blur.", editor);

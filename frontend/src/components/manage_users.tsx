@@ -58,7 +58,6 @@ export function UserMan() {
             }
 
             const data = await response.json();
-            console.log('User created:', data);
             setErrorMessage('');
             setUsers((prevUsers) => [...prevUsers, { username, role: usertype }]);
         } catch (error) {
@@ -84,7 +83,6 @@ export function UserMan() {
 
             setUsers((prevUsers) => prevUsers.filter((user) => user.username !== username));
             setErrorMessage('');
-            console.log('User deleted:', username);
         } catch (error) {
             console.error('Error deleting user:', error);
             setErrorMessage('Failed to delete user');
