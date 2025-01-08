@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Typography } from '@material-tailwind/react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
+
+const Typography = dynamic(() => import('@material-tailwind/react').then((mod) => mod.Typography), { ssr: false });
 
 const teamMembers = [
   {
@@ -54,38 +56,40 @@ export default function Team() {
         </div>
       </Link>
 
-      <div className="flex !w-full py-20 mb-5 md:mb-20 flex-col justify-center !items-center bg-cover bg-center container max-w-6xl mx-auto rounded-2xl p-5 gap-4">
-        <Typography as="h1" variant="h3" className="text-2xl md:text-3xl text-center font-bold p-5 rounded-lg">
+      <div className="flex flex-col justify-center items-center py-10 gap-4">
+        <Typography as="h1" variant="h3" className="text-2xl font-bold">
           Our Team
         </Typography>
-        <div className="px-100 text-center my-3 !text-base backdrop-blur-sm p-2 rounded-lg">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="text-center">
-                <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border border-gray-300">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <a
-                  href={member.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block mt-4 text-gray-600 hover:text-gray-900"
-                >
-                  <img
-                    src="/logos/logo-linkedin.svg"
-                    alt="LinkedIn"
-                    className="w-6 h-6 inline"
-                  />
-                </a>
-                <Typography as="h3" variant='h5' className="mt-4 text-gray-800">{member.name}</Typography>
-                <Typography as="p" className="mt-4 text-gray-700">{member.role}</Typography>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {teamMembers.map((member, index) => (
+            <div key={index} className="text-center">
+              <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border border-gray-300">
+                <img
+                  src={member.image}
+                  alt={member.name}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ))}
-          </div>
+              <a
+                href={member.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-4 text-gray-600 hover:text-gray-900"
+              >
+                <img
+                  src="/logos/logo-linkedin.svg"
+                  alt="LinkedIn"
+                  className="w-6 h-6 inline"
+                />
+              </a>
+              <Typography as="h3" className="mt-4 text-gray-800">
+                {member.name}
+              </Typography>
+              <Typography as="p" className="mt-2 text-gray-700">
+                {member.role}
+              </Typography>
+            </div>
+          ))}
         </div>
       </div>
     </div>
