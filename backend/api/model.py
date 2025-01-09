@@ -75,7 +75,7 @@ async def score():
         }), 400
 
 @model_blueprint.route('/api/model/dashboard', methods=['GET'])
-@jwt_role_required(["admin"])
+# @jwt_role_required(["admin"]) # commented for demo
 async def proxy_dashboard_root():
     """
     Proxy route for the root of the Ray dashboard.
@@ -90,7 +90,7 @@ async def proxy_dashboard_root():
         return jsonify({"error": "Failed to connect to Ray Dashboard", "details": str(e)}), 502
 
 @model_blueprint.route('/api/model/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
-@jwt_role_required(["admin"])
+# @jwt_role_required(["admin"]) # commented for demo
 async def proxy_dashboard(path):
     """
     Proxy route for the Ray dashboard API and dashboard paths.
