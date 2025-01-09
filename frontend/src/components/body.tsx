@@ -9,7 +9,7 @@ import {
 } from "@material-tailwind/react";
 import { useAuth } from "@/context/authContext";
 
-const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
+const Body = () => {
   const { role } = useAuth();
 
   const labeldata = [
@@ -19,7 +19,7 @@ const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
   ];
 
   return (
-    <section ref={ref} className="grid h-auto gap-8 place-items-center p-8">
+    <section className="grid h-auto gap-8 place-items-center p-8">
       <Tabs
         value="about"
         className="mx-auto max-w-7xl w-full mb-2"
@@ -43,7 +43,7 @@ const Body = forwardRef<HTMLDivElement, {}>((props, ref) => {
       </Tabs>
     </section>
   );
-});
+};
 
 // Assign a display name to the component
 Body.displayName = "Body";

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Navbar as MTNavbar, 
-  Collapse, 
-  Button, 
-  IconButton, 
-  Typography 
+import {
+  Navbar as MTNavbar,
+  Collapse,
+  Button,
+  IconButton,
+  Typography
 } from "@material-tailwind/react";
-import { 
-  UserCircleIcon, 
-  CommandLineIcon, 
-  XMarkIcon, 
-  Bars3Icon 
+import {
+  UserCircleIcon,
+  CommandLineIcon,
+  XMarkIcon,
+  Bars3Icon
 } from "@heroicons/react/24/solid";
 import Login from "./login";
 import { useAuth } from "@/context/authContext";
@@ -27,10 +27,6 @@ const NAV_MENU = [
 interface NavItemProps {
   children: React.ReactNode;
   href?: string;
-}
-
-interface NavbarProps {
-  bodyRef: React.RefObject<HTMLDivElement>;
 }
 
 function NavItem({ children, href }: NavItemProps) {
@@ -50,11 +46,11 @@ function NavItem({ children, href }: NavItemProps) {
   );
 }
 
-export function Navbar({ bodyRef }: NavbarProps) {
+export function Navbar() {
   const { isLoginOpen, openLogin, closeLogin } = useLogin();
   const { isLoggedIn, logout } = useAuth();
   const [open, setOpen] = useState(false);
-  const [username, setUsername] = useState<string | null>("logged out");
+  const [username, setUsername] = useState("logged out");
 
   const handleLogout = () => {
     logout();
@@ -69,14 +65,11 @@ export function Navbar({ bodyRef }: NavbarProps) {
     <>
       <MTNavbar shadow={false} fullWidth className="border-0 sticky top-0 z-[1001]">
         <div className="container mx-auto flex items-center justify-between">
-          <Typography
-            as="a"
-            onClick={() => bodyRef.current?.scrollIntoView({ behavior: "smooth" })}
-            color="blue-gray"
-            className="text-lg font-bold text-[#fd5f22] cursor-pointer"
-          >
-            Klopta
-          </Typography>
+          <img
+            src="/logos/klopta.png"
+            alt="klopta"
+            className="w-[3vw] h-[6vh]"
+          />
           <ul className="ml-10 hidden items-center gap-8 lg:flex ml-auto mr-auto">
             <NavItem>
               <UserCircleIcon className="h-5 w-5" />
@@ -91,7 +84,7 @@ export function Navbar({ bodyRef }: NavbarProps) {
           </ul>
           <div className="hidden items-center gap-2 lg:flex">
             <Button color="gray" onClick={isLoggedIn ? handleLogout : openLogin}>
-            {isLoggedIn ? (localStorage.getItem("username") == "temp" ? "Stop Demo" : "Log Out") : "Log In"}
+              {isLoggedIn ? (localStorage.getItem("username") == "temp" ? "Stop Demo" : "Log Out") : "Log In"}
             </Button>
           </div>
           <IconButton

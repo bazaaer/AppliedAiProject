@@ -14,15 +14,13 @@ import { AuthProvider } from "@/context/authContext";
 import { LoginProvider } from "@/context/loginContext";
 
 export default function Page() {
-  const bodyRef = React.useRef<HTMLDivElement | null>(null);
-
   return (
     <AuthProvider>
       <LoginProvider>
         <div>
-          <Navbar bodyRef={bodyRef} />
+          <Navbar />
           <Demo />
-          <Body ref={bodyRef} />
+          <Body />
           <Footer />
         </div>
       </LoginProvider>
