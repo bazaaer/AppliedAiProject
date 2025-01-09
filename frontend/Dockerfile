@@ -24,6 +24,7 @@ WORKDIR /app
 
 # Copy built application from the builder stage
 COPY --from=builder /app/out /app/out
+COPY --from=builder /app/ckeditor5_build /app/ckeditor5_build
 
 # Expose the desired port (default: 3000)
 EXPOSE 3000
