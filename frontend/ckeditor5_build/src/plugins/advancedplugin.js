@@ -1,6 +1,6 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import icon from '../Icon_3.svg'
+import icon from '../reader-follow-svgrepo-com.svg'
 
 export default class advancedPlugin extends Plugin {
     init() {
@@ -15,7 +15,7 @@ export default class advancedPlugin extends Plugin {
             const view = new ButtonView(locale);
 
             view.set({
-                label: 'advanced herschrijven',
+                label: 'herschrijven met prompt',
                 icon: icon,
                 withText: false,
                 tooltip: true
