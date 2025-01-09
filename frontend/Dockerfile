@@ -1,5 +1,5 @@
-# Use a lightweight Node.js image
-FROM node:18-alpine
+# Build stage
+FROM node:18-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -15,6 +15,15 @@ COPY . .
 
 # Build the Next.js app
 RUN npm run build
+
+# Run stage
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy built application from the builder stage
+COPY --from=builder /app/out /app/out
 
 # Expose the desired port (default: 3000)
 EXPOSE 3000
